@@ -1,20 +1,23 @@
 //! TODO: PLIC
 
 use axplat::irq::{HandlerTable, IrqHandler, IrqIf};
-use lazyinit::LazyInit;
+use core::sync::atomic::{AtomicPtr, Ordering};
 use riscv::register::sie;
+
+/// `Interrupt` bit in `scause`
+pub(super) const INTC_IRQ_BASE: usize = 1 << (usize::BITS - 1);
 
 /// Supervisor software interrupt in `scause`
 #[allow(unused)]
-pub(super) const S_SOFT: usize = 1;
+pub(super) const S_SOFT: usize = INTC_IRQ_BASE + 1;
 
 /// Supervisor timer interrupt in `scause`
-pub(super) const S_TIMER: usize = 5;
+pub(super) const S_TIMER: usize = INTC_IRQ_BASE + 5;
 
 /// Supervisor external interrupt in `scause`
-pub(super) const S_EXT: usize = 9;
+pub(super) const S_EXT: usize = INTC_IRQ_BASE + 9;
 
-static TIMER_HANDLER: LazyInit<IrqHandler> = LazyInit::new();
+static TIMER_HANDLER: AtomicPtr<()> = AtomicPtr::new(core::ptr::null_mut());
 
 /// The maximum number of IRQs.
 pub const MAX_IRQ_COUNT: usize = 1024;
@@ -22,11 +25,19 @@ pub const MAX_IRQ_COUNT: usize = 1024;
 static IRQ_HANDLER_TABLE: HandlerTable<MAX_IRQ_COUNT> = HandlerTable::new();
 
 macro_rules! with_cause {
-    ($cause: expr, @TIMER => $timer_op: expr, @EXT => $ext_op: expr $(,)?) => {
+    ($cause: expr, @S_TIMER => $timer_op: expr, @S_EXT => $ext_op: expr, @EX_IRQ => $plic_op: expr $(,)?) => {
         match $cause {
             S_TIMER => $timer_op,
             S_EXT => $ext_op,
-            _ => panic!("invalid trap cause: {:#x}", $cause),
+            other => {
+                if other & INTC_IRQ_BASE == 0 {
+                    // Device-side interrupts read from PLIC
+                    $plic_op
+                } else {
+                    // Other CPU-side interrupts
+                    panic!("Unknown IRQ cause: {}", other);
+                }
+            }
         }
     };
 }
@@ -46,30 +57,39 @@ struct IrqIfImpl;
 impl IrqIf for IrqIfImpl {
     /// Enables or disables the given IRQ.
     fn set_enable(irq: usize, _enabled: bool) {
-        if irq == S_EXT {
-            // TODO: set enable in PLIC
-        }
+        // TODO: set enable in PLIC
+        warn!("set_enable is not implemented for IRQ {}", irq);
     }
 
     /// Registers an IRQ handler for the given IRQ.
     ///
     /// It also enables the IRQ if the registration succeeds. It returns `false` if
     /// the registration failed.
+    ///
+    /// The `irq` parameter has the following semantics
+    /// 1. If its highest bit is 1, it means it is an interrupt on the CPU side. Its
+    /// value comes from `scause`, where [`S_SOFT`] represents software interrupt
+    /// and [`S_TIMER`] represents timer interrupt. If its value is [`S_EXT`], it
+    /// means it is an external interrupt, and the real IRQ number needs to
+    /// be obtained from PLIC.
+    /// 2. If its highest bit is 0, it means it is an interrupt on the device side,
+    /// and its value is equal to the IRQ number provided by PLIC.
     fn register(irq: usize, handler: IrqHandler) -> bool {
         with_cause!(
             irq,
-            @TIMER => if !TIMER_HANDLER.is_inited() {
-                TIMER_HANDLER.init_once(handler);
-                true
-            } else {
+            @S_TIMER => TIMER_HANDLER.compare_exchange(core::ptr::null_mut(), handler as *mut _, Ordering::AcqRel, Ordering::Acquire).is_ok(),
+            @S_EXT => {
+                warn!("External IRQ should be got from PLIC, not scause");
                 false
             },
-            @EXT => if IRQ_HANDLER_TABLE.register_handler(irq, handler) {
-                Self::set_enable(irq, true);
-                return true;
-            } else {
-                warn!("register handler for IRQ {} failed", irq);
-                false
+            @EX_IRQ => {
+                if IRQ_HANDLER_TABLE.register_handler(irq, handler) {
+                    Self::set_enable(irq, true);
+                    true
+                } else {
+                    warn!("register handler for External IRQ {} failed", irq);
+                    false
+                }
             }
         )
     }
@@ -79,8 +99,22 @@ impl IrqIf for IrqIfImpl {
     /// It also disables the IRQ if the unregistration succeeds. It returns the
     /// existing handler if it is registered, `None` otherwise.
     fn unregister(irq: usize) -> Option<IrqHandler> {
-        Self::set_enable(irq, false);
-        IRQ_HANDLER_TABLE.unregister_handler(irq)
+        with_cause!(
+            irq,
+            @S_TIMER => {
+                let handler = TIMER_HANDLER.swap(core::ptr::null_mut(), Ordering::AcqRel);
+                if !handler.is_null() {
+                    Some(unsafe { core::mem::transmute::<*mut (), IrqHandler>(handler) })
+                } else {
+                    None
+                }
+            },
+            @S_EXT => {
+                warn!("External IRQ should be got from PLIC, not scause");
+                None
+            },
+            @EX_IRQ => IRQ_HANDLER_TABLE.unregister_handler(irq)
+        )
     }
 
     /// Handles the IRQ.
@@ -91,16 +125,23 @@ impl IrqIf for IrqIfImpl {
     fn handle(irq: usize) {
         with_cause!(
             irq,
-            @TIMER => {
+            @S_TIMER => {
                 trace!("IRQ: timer");
-                TIMER_HANDLER();
-            },
-            @EXT => {
-                trace!("IRQ: external");
-                if !IRQ_HANDLER_TABLE.handle(irq) {
-                    warn!("Unhandled IRQ {}", irq);
+                let handler = TIMER_HANDLER.load(Ordering::Acquire);
+                if !handler.is_null() {
+                    // SAFETY: The handler is guaranteed to be a valid function pointer.
+                    unsafe { core::mem::transmute::<*mut (), IrqHandler>(handler)() };
                 }
+            },
+            @S_EXT => {
+                // TODO: get IRQ number from PLIC
+                if !IRQ_HANDLER_TABLE.handle(0) {
+                    warn!("Unhandled IRQ {}", 0);
+                }
+            },
+            @EX_IRQ => {
+                unreachable!("Device-side IRQs should be handled by triggering the External Interrupt.");
             }
-        );
+        )
     }
 }

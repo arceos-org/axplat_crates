@@ -1,5 +1,3 @@
-use riscv::register::satp;
-
 use crate::config::plat::{BOOT_STACK_SIZE, PHYS_VIRT_OFFSET};
 
 #[unsafe(link_section = ".bss.stack")]
@@ -23,11 +21,10 @@ unsafe fn init_boot_page_table() {
 }
 
 unsafe fn init_mmu() {
-    let page_table_root = &raw const BOOT_PT_SV39 as usize;
     unsafe {
-        satp::set(satp::Mode::Sv39, 0, page_table_root >> 12);
+        axcpu::asm::write_kernel_page_table(pa!(&raw const BOOT_PT_SV39 as usize));
+        axcpu::asm::flush_tlb(None);
     }
-    riscv::asm::sfence_vma_all();
 }
 
 /// The earliest entry point for the primary CPU.
@@ -55,14 +52,14 @@ unsafe extern "C" fn _start() -> ! {
         mv      a1, s1
         la      a2, {entry}
         add     a2, a2, s2
-        jalr    a2                      // call rust_entry(hartid, dtb)
+        jalr    a2                      // call_main(cpu_id, dtb)
         j       .",
         phys_virt_offset = const PHYS_VIRT_OFFSET,
         boot_stack_size = const BOOT_STACK_SIZE,
         boot_stack = sym BOOT_STACK,
         init_boot_page_table = sym init_boot_page_table,
         init_mmu = sym init_mmu,
-        entry = sym super::rust_entry,
+        entry = sym axplat::call_main,
     )
 }
 
@@ -87,10 +84,10 @@ unsafe extern "C" fn _start_secondary() -> ! {
         mv      a0, s0
         la      a1, {entry}
         add     a1, a1, s1
-        jalr    a1                      // call rust_entry_secondary(hartid)
+        jalr    a1                      // call_secondary_main(cpu_id)
         j       .",
         phys_virt_offset = const PHYS_VIRT_OFFSET,
         init_mmu = sym init_mmu,
-        entry = sym super::rust_entry_secondary,
+        entry = sym axplat::call_secondary_main,
     )
 }
