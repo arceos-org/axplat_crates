@@ -1,0 +1,32 @@
+[package]
+name = "axplat-riscv64-qemu-virt"
+version = "0.1.0"
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+homepage.workspace = true
+documentation.workspace = true
+repository.workspace = true
+
+[features]
+fp_simd = ["axcpu/fp_simd"]
+irq = []
+rtc = ["riscv_goldfish"]
+smp = []
+
+[dependencies]
+kspin = "0.1"
+log = "=0.4.21"
+bitflags = "2.6"
+lazyinit = "0.2"
+int_ratio = "0.1"
+percpu = "0.2"
+memory_addr = "0.3"
+heapless = "0.8"
+axconfig-gen-macros = { version = "0.1", features = ["nightly"] }
+axcpu = { workspace = true }
+axplat = { workspace = true }
+
+riscv = "0.13"
+sbi-rt = { version = "0.0.3", features = ["legacy"] }
+riscv_goldfish = { version = "0.1", optional = true }

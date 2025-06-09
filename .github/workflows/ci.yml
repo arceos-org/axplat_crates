@@ -57,6 +57,8 @@ jobs:
             target: aarch64-unknown-none
           - name: axplat-aarch64-raspi
             target: aarch64-unknown-none
+          - name: axplat-riscv64-qemu-virt
+            target: riscv64gc-unknown-none-elf
     steps:
     - uses: actions/checkout@v4
     - uses: dtolnay/rust-toolchain@nightly
