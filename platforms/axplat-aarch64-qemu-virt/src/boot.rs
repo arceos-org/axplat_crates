@@ -1,4 +1,4 @@
-use page_table_entry::{aarch64::A64PTE, GenericPTE, MappingFlags};
+use page_table_entry::{GenericPTE, MappingFlags, aarch64::A64PTE};
 
 use crate::config::plat::{BOOT_STACK_SIZE, PHYS_VIRT_OFFSET};
 
