@@ -90,6 +90,3 @@ gicd-paddr = 0x3088_0000        # uint
 
 # CPU Hardware ID list
 cpu-id-list = [0x200, 0x201, 0x00, 0x100]
-
-# RTC (PL031) Address (Need to read from DTB).
-rtc-paddr = 0x0         # uint
