@@ -38,6 +38,13 @@ unsafe fn enable_fp() {
     axcpu::asm::enable_fp();
 }
 
+fn hart_to_logid(hard_id: usize) -> usize {
+    crate::config::devices::CPU_ID_LIST
+        .iter()
+        .position(|&x| x == hard_id)
+        .unwrap()
+}
+
 /// Kernel entry point with Linux image header.
 ///
 /// Some bootloaders require this header to be present at the beginning of the
@@ -93,9 +100,10 @@ unsafe extern "C" fn _start_primary() -> ! {
         mov     x8, {phys_virt_offset}  // set SP to the high address
         add     sp, sp, x8
 
-        mov     x0, x19                 // call_main(cpu_id, dtb)
+        mov     x0, x19
+        bl      {hart_to_logid} // x0 = logical CPU ID
         mov     x1, x20
-        ldr     x8, ={entry}
+        ldr     x8, ={entry} // call_main(cpu_id, dtb)
         blr     x8
         b      .",
         switch_to_el1 = sym axcpu::init::switch_to_el1,
@@ -106,6 +114,7 @@ unsafe extern "C" fn _start_primary() -> ! {
         boot_stack_size = const BOOT_STACK_SIZE,
         boot_pt = sym BOOT_PT_L0,
         phys_virt_offset = const PHYS_VIRT_OFFSET,
+        hart_to_logid = sym hart_to_logid,
         entry = sym axplat::call_main,
     )
 }
@@ -129,8 +138,9 @@ pub(crate) unsafe extern "C" fn _start_secondary() -> ! {
         mov     x8, {phys_virt_offset}  // set SP to the high address
         add     sp, sp, x8
 
-        mov     x0, x19                 // call_secondary_main(cpu_id)
-        ldr     x8, ={entry}
+        mov     x0, x19
+        bl      {hart_to_logid} // x0 = logical CPU ID
+        ldr     x8, ={entry} // call_secondary_main(cpu_id)
         blr     x8
         b      .",
         switch_to_el1 = sym axcpu::init::switch_to_el1,
@@ -138,6 +148,7 @@ pub(crate) unsafe extern "C" fn _start_secondary() -> ! {
         enable_fp = sym enable_fp,
         boot_pt = sym BOOT_PT_L0,
         phys_virt_offset = const PHYS_VIRT_OFFSET,
+        hart_to_logid = sym hart_to_logid,
         entry = sym axplat::call_secondary_main,
     )
 }

@@ -4,13 +4,6 @@ use axplat::init::InitIf;
 use crate::config::devices::{GICC_PADDR, GICD_PADDR, TIMER_IRQ, UART_IRQ, UART_PADDR};
 use crate::{config::plat::PSCI_METHOD, mem::phys_to_virt};
 
-fn hart_to_logid(hard_id: usize) -> usize {
-    crate::config::devices::CPU_ID_LIST
-        .iter()
-        .position(|&x| x == hard_id)
-        .unwrap()
-}
-
 struct InitIfImpl;
 
 #[impl_plat_interface]
@@ -21,7 +14,7 @@ impl InitIf for InitIfImpl {
     /// and performed earliest platform configuration and initialization (e.g.,
     /// early console, clocking).
     fn init_early(cpu_id: usize, _dtb: usize) {
-        axcpu::init::init_cpu(hart_to_logid(cpu_id));
+        axcpu::init::init_cpu(cpu_id);
         axplat_aarch64_common::pl011::init_early(phys_to_virt(pa!(UART_PADDR)));
         axplat_aarch64_common::psci::init(PSCI_METHOD);
         axplat_aarch64_common::generic_timer::init_early();
@@ -29,7 +22,7 @@ impl InitIf for InitIfImpl {
 
     /// Initializes the platform at the early stage for secondary cores.
     fn init_early_secondary(cpu_id: usize) {
-        axcpu::init::init_cpu(hart_to_logid(cpu_id));
+        axcpu::init::init_cpu(cpu_id);
     }
 
     /// Initializes the platform at the later stage for the primary core.

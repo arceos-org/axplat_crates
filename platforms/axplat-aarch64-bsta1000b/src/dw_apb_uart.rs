@@ -12,9 +12,6 @@ const UART_BASE: PhysAddr = pa!(crate::config::devices::UART_PADDR);
 
 static UART: SpinNoIrq<DW8250> = SpinNoIrq::new(DW8250::new(phys_to_virt(UART_BASE).as_usize()));
 
-/// The GIC INTID for the UART interrupt.
-const UART_IRQ_NUM: usize = translate_irq(UART_IRQ, InterruptType::SPI).unwrap();
-
 /// Writes a byte to the console.
 #[allow(dead_code)]
 pub fn putchar(c: u8) {
@@ -42,7 +39,7 @@ pub fn init_early() {
 #[cfg(feature = "irq")]
 pub fn init_irq() {
     UART.lock().set_ier(true);
-    axplat_aarch64_common::gic::register_handler(UART_IRQ_NUM, handle);
+    axplat_aarch64_common::gic::register_handler(UART_IRQ, handle);
 }
 
 /// UART IRQ Handler

@@ -52,8 +52,8 @@ virtio-mmio-ranges = []    # [(uint, uint)]
 
 # UART Address
 uart-paddr = 0x2000_8000        # uint
-# UART IRQ number (SPI)
-uart-irq = 0xd5                 # uint
+# UART IRQ number (SPI, 0xd5)
+uart-irq = 0xf5                 # uint
 # Timer interrupt num (PPI, physical timer).
 timer-irq = 0x1e                # uint
 
@@ -68,5 +68,5 @@ a1000base-topcrm = 0x3300_2000      # uint
 a1000base-safetycrm = 0x7003_5000   # uint
 a1000base-aoncfg = 0x7003_8000      # uint
 
-# RTC (PL031) Address (Need to read from DTB).
-rtc-paddr = 0x0         # uint
+# CPU Hardware ID list
+cpu-id-list = [0x00, 0x100, 0x200, 0x300, 0x400, 0x500, 0x600, 0x700]

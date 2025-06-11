@@ -27,8 +27,6 @@ impl PowerIf for PowerImpl {
     /// Shutdown the whole system.
     fn system_off() -> ! {
         info!("Shutting down...");
-        loop {
-            axcpu::asm::halt();
-        }
+        axplat_aarch64_common::psci::system_off()
     }
 }

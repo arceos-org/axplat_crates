@@ -1,7 +1,7 @@
 use axplat::init::InitIf;
 
 #[allow(unused_imports)]
-use crate::config::devices::{GICC_PADDR, GICD_PADDR, RTC_PADDR, TIMER_IRQ, UART_PADDR};
+use crate::config::devices::{GICC_PADDR, GICD_PADDR, TIMER_IRQ};
 use crate::config::plat::PSCI_METHOD;
 use crate::mem::phys_to_virt;
 
@@ -16,12 +16,9 @@ impl InitIf for InitIfImpl {
     /// early console, clocking).
     fn init_early(cpu_id: usize, _dtb: usize) {
         axcpu::init::init_cpu(cpu_id);
-        axplat_aarch64_common::pl011::init_early(phys_to_virt(pa!(UART_PADDR)));
         axplat_aarch64_common::psci::init(PSCI_METHOD);
         super::dw_apb_uart::init_early();
         axplat_aarch64_common::generic_timer::init_early();
-        #[cfg(feature = "rtc")]
-        axplat_aarch64_common::pl031::init_early(phys_to_virt(pa!(RTC_PADDR)));
     }
 
     /// Initializes the platform at the early stage for secondary cores.

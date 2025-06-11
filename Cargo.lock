@@ -153,7 +153,6 @@ dependencies = [
 name = "axplat-aarch64-bsta1000b"
 version = "0.1.0"
 dependencies = [
- "arm_gicv2",
  "axconfig-gen-macros",
  "axcpu",
  "axplat",

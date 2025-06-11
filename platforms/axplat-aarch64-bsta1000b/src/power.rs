@@ -18,6 +18,6 @@ impl PowerIf for PowerImpl {
 
     /// Shutdown the whole system.
     fn system_off() -> ! {
-        crate::misc::terminate()
+        axplat_aarch64_common::psci::system_off()
     }
 }

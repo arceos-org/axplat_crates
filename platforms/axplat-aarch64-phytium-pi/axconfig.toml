@@ -77,8 +77,8 @@ pci-ranges = [
 ]                                       # [(uint, uint)]
 # UART Address
 uart-paddr = 0x2800_D000        # uint
-# UART IRQ number (SPI)
-uart-irq = 0x54                 # uint
+# UART IRQ number (SPI, 0x54)
+uart-irq = 0x74                 # uint
 # Timer interrupt num (PPI, physical timer).
 timer-irq = 0x1e                # uint
 
