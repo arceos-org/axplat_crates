@@ -11,7 +11,7 @@ platform = "aarch64-bsta1000b"      # str
 family = "aarch64-bsta1000b"        # str
 
 # Base address of the whole physical memory.
-phys-memory-base = 0x8100_0000      # uint
+phys-memory-base = 0x8000_0000      # uint
 # Size of the whole physical memory.
 phys-memory-size = 0x7000_0000      # uint
 # Base physical address of the kernel image.

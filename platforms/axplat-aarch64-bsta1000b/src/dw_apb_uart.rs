@@ -1,6 +1,5 @@
 //! snps,dw-apb-uart serial driver
 
-use arm_gicv2::{InterruptType, translate_irq};
 use axplat::console::ConsoleIf;
 
 use crate::{config::devices::UART_IRQ, mem::phys_to_virt};

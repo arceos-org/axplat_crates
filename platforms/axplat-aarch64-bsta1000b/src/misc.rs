@@ -1,5 +1,3 @@
-pub use axplat_aarch64_common::psci::system_off as terminate;
-
 use crate::config::devices::{A1000BASE_SAFETYCRM, A1000BASE_TOPCRM};
 use crate::mem::phys_to_virt;
 use axplat::time::{Duration, busy_wait};
