@@ -12,7 +12,7 @@ impl PowerIf for PowerImpl {
     fn cpu_boot(_cpu_id: usize, _stack_top_paddr: usize) {
         #[cfg(feature = "smp")]
         {
-            use crate::config::devices::CPU_ID_LIST;
+            use crate::config::plat::CPU_ID_LIST;
             use crate::mem::virt_to_phys;
 
             let entry = virt_to_phys(va!(crate::boot::_start_secondary as usize));

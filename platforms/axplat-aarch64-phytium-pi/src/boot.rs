@@ -39,7 +39,7 @@ unsafe fn enable_fp() {
 }
 
 fn hart_to_logid(hard_id: usize) -> usize {
-    crate::config::devices::CPU_ID_LIST
+    crate::config::plat::CPU_ID_LIST
         .iter()
         .position(|&x| x == hard_id)
         .unwrap()
@@ -95,15 +95,15 @@ unsafe extern "C" fn _start_primary() -> ! {
         bl      {enable_fp}             // enable fp/neon
         bl      {init_boot_page_table}
         adrp    x0, {boot_pt}
-        bl      {init_mmu}            // setup MMU
+        bl      {init_mmu}              // setup MMU
 
         mov     x8, {phys_virt_offset}  // set SP to the high address
         add     sp, sp, x8
 
         mov     x0, x19
-        bl      {hart_to_logid} // x0 = logical CPU ID
+        bl      {hart_to_logid}         // x0 = logical CPU ID
         mov     x1, x20
-        ldr     x8, ={entry} // call_main(cpu_id, dtb)
+        ldr     x8, ={entry}            // call_main(cpu_id, dtb)
         blr     x8
         b      .",
         switch_to_el1 = sym axcpu::init::switch_to_el1,
@@ -139,8 +139,8 @@ pub(crate) unsafe extern "C" fn _start_secondary() -> ! {
         add     sp, sp, x8
 
         mov     x0, x19
-        bl      {hart_to_logid} // x0 = logical CPU ID
-        ldr     x8, ={entry} // call_secondary_main(cpu_id)
+        bl      {hart_to_logid}         // x0 = logical CPU ID
+        ldr     x8, ={entry}            // call_secondary_main(cpu_id)
         blr     x8
         b      .",
         switch_to_el1 = sym axcpu::init::switch_to_el1,

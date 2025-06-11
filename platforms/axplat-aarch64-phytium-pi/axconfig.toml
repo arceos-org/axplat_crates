@@ -34,6 +34,9 @@ boot-stack-size = 0x40000                       # uint
 # PSCI
 psci-method = "smc"             # str
 
+# CPU Hardware ID list
+cpu-id-list = [0x200, 0x201, 0x00, 0x100]
+
 #
 # Device specifications
 #
@@ -87,6 +90,3 @@ gicc-paddr = 0x3080_0000        # uint
 # GIC Distributor base address
 # (TODO: gicv3 dosen't support yet, there is no gicd and need a gicr address)
 gicd-paddr = 0x3088_0000        # uint
-
-# CPU Hardware ID list
-cpu-id-list = [0x200, 0x201, 0x00, 0x100]

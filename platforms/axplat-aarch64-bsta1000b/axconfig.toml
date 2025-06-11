@@ -34,6 +34,9 @@ boot-stack-size = 0x40000                       # uint
 # PSCI
 psci-method = "smc"     # str
 
+# CPU Hardware ID list
+cpu-id-list = [0x00, 0x100, 0x200, 0x300, 0x400, 0x500, 0x600, 0x700]
+
 #
 # Device specifications
 #
@@ -67,6 +70,3 @@ cpu-csr-base = 0x3201_1000          # uint
 a1000base-topcrm = 0x3300_2000      # uint
 a1000base-safetycrm = 0x7003_5000   # uint
 a1000base-aoncfg = 0x7003_8000      # uint
-
-# CPU Hardware ID list
-cpu-id-list = [0x00, 0x100, 0x200, 0x300, 0x400, 0x500, 0x600, 0x700]
