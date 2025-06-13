@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["handle_irq","init_gicc","init_gicd","register_handler","set_enable","unregister_handler"]};

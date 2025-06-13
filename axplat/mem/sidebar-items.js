@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["DEFAULT_MMIO_FLAGS","DEFAULT_RAM_FLAGS","DEFAULT_RESERVED_FLAGS"],"fn":["check_sorted_ranges_overlap","mmio_ranges","phys_ram_ranges","ranges_difference","reserved_phys_ram_ranges","total_ram_size"],"struct":["MemRegionFlags","PhysMemRegion"],"trait":["MemIf"],"type":["OverlapErr","RawRange"]};

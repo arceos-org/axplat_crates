@@ -1,0 +1,1 @@
+searchState.loadedDescShard("axplat_macros", 0, "Macros to define and access a per-CPU data structure.\nMarks a function to be called on the primary core after …\nMarks a function to be called on the secondary cores after …")
