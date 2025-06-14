@@ -1,9 +1,9 @@
 # Architecture identifier.
-arch = "aarch64"                    # str
+arch = "aarch64"                                # str
 # Platform identifier.
-platform = "aarch64-qemu-virt"      # str
+platform = "aarch64-qemu-virt"                  # str
 # Platform package.
-package = "aarch64-qemu-virt"        # str
+package = "axplat-aarch64-qemu-virt"            # str
 
 #
 # Platform configs

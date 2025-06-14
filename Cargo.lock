@@ -144,9 +144,11 @@ version = "0.1.0"
 dependencies = [
  "axplat-macros",
  "bitflags 2.9.1",
+ "const-str",
  "crate_interface",
  "handler_table",
  "memory_addr",
+ "static_assertions",
 ]
 
 [[package]]
@@ -157,11 +159,13 @@ dependencies = [
  "axcpu",
  "axplat",
  "axplat-aarch64-common",
+ "const-str",
  "dw_apb_uart",
  "kspin",
  "log",
  "memory_addr",
  "page_table_entry",
+ "static_assertions",
 ]
 
 [[package]]
@@ -190,9 +194,11 @@ dependencies = [
  "axcpu",
  "axplat",
  "axplat-aarch64-common",
+ "const-str",
  "log",
  "memory_addr",
  "page_table_entry",
+ "static_assertions",
 ]
 
 [[package]]
@@ -203,9 +209,11 @@ dependencies = [
  "axcpu",
  "axplat",
  "axplat-aarch64-common",
+ "const-str",
  "log",
  "memory_addr",
  "page_table_entry",
+ "static_assertions",
 ]
 
 [[package]]
@@ -217,9 +225,11 @@ dependencies = [
  "axcpu",
  "axplat",
  "axplat-aarch64-common",
+ "const-str",
  "log",
  "memory_addr",
  "page_table_entry",
+ "static_assertions",
 ]
 
 [[package]]
@@ -230,6 +240,7 @@ dependencies = [
  "axcpu",
  "axplat",
  "chrono",
+ "const-str",
  "kspin",
  "lazyinit",
  "log",
@@ -237,6 +248,7 @@ dependencies = [
  "memory_addr",
  "ns16550a",
  "page_table_entry",
+ "static_assertions",
 ]
 
 [[package]]
@@ -256,11 +268,13 @@ dependencies = [
  "axconfig-macros",
  "axcpu",
  "axplat",
+ "const-str",
  "log",
  "memory_addr",
  "riscv 0.13.0",
  "riscv_goldfish",
  "sbi-rt",
+ "static_assertions",
 ]
 
 [[package]]
@@ -271,6 +285,7 @@ dependencies = [
  "axcpu",
  "axplat",
  "bitflags 2.9.1",
+ "const-str",
  "heapless",
  "int_ratio",
  "kspin",
@@ -280,6 +295,7 @@ dependencies = [
  "multiboot",
  "percpu",
  "raw-cpuid 11.5.0",
+ "static_assertions",
  "uart_16550",
  "x2apic",
  "x86",
@@ -447,6 +463,12 @@ name = "colorchoice"
 version = "1.0.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b05b61dc5112cbb17e4b6cd61790d9845d13888356391624cbe7e41efeac1e75"
+
+[[package]]
+name = "const-str"
+version = "0.6.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9e991226a70654b49d34de5ed064885f0bef0348a8e70018b8ff1ac80aa984a2"
 
 [[package]]
 name = "crate_interface"

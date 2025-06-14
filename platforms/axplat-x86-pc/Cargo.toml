@@ -24,6 +24,8 @@ int_ratio = "0.1"
 percpu = "0.2"
 memory_addr = "0.3"
 heapless = "0.8"
+static_assertions = "1.1"
+const-str = "0.6.2"
 axconfig-macros = "0.2"
 axcpu = { workspace = true }
 axplat = { workspace = true }

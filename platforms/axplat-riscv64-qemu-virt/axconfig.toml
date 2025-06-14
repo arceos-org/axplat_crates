@@ -1,9 +1,9 @@
 # Architecture identifier.
-arch = "riscv64"                    # str
+arch = "riscv64"                                # str
 # Platform identifier.
-platform = "riscv64-qemu-virt"      # str
+platform = "riscv64-qemu-virt"                  # str
 # Platform package.
-package = "riscv64-qemu-virt"        # str
+package = "axplat-riscv64-qemu-virt"            # str
 
 #
 # Platform configs

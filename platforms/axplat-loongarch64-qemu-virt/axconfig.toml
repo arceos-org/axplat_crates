@@ -1,9 +1,9 @@
 # Architecture identifier.
-arch = "loongarch64"                  # str
+arch = "loongarch64"                            # str
 # Platform identifier.
-platform = "loongarch64-qemu-virt"    # str
+platform = "loongarch64-qemu-virt"              # str
 # Platform package.
-package = "loongarch64-qemu-virt"     # str
+package = "axplat-loongarch64-qemu-virt"        # str
 
 #
 # Platform configs
