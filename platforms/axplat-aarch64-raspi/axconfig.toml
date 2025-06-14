@@ -2,14 +2,15 @@
 arch = "aarch64"                    # str
 # Platform identifier.
 platform = "aarch64-raspi4"         # str
+# Platform package.
+package = "aarch64-raspi"            # str
 
 #
 # Platform configs
 #
 [plat]
-# Platform family.
-family = "aarch64-raspi"            # str
-
+# Number of CPUs.
+cpu-num = 1                         # uint
 # Base address of the whole physical memory.
 phys-memory-base = 0x0              # uint
 # Size of the whole physical memory. (2G)
