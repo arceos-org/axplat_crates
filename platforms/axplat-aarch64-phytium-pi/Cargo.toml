@@ -19,6 +19,8 @@ log = "=0.4.21"
 memory_addr = "0.3"
 page_table_entry = "0.5"
 axconfig-macros = "0.2"
+static_assertions = "1.1"
+const-str = "0.6.2"
 axplat-aarch64-common = { version = "0.1", path = "../axplat-aarch64-common" }
 axcpu = { workspace = true }
 axplat = { workspace = true }

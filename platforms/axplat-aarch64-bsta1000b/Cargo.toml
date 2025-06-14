@@ -20,6 +20,8 @@ kspin = "0.1"
 memory_addr = "0.3"
 page_table_entry = "0.5"
 dw_apb_uart = "0.1"
+static_assertions = "1.1"
+const-str = "0.6.2"
 
 axconfig-macros = "0.2"
 axplat-aarch64-common = { version = "0.1", path = "../axplat-aarch64-common" }

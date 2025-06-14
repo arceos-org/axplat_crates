@@ -14,6 +14,7 @@ mod power;
 mod config {
     axconfig_macros::include_configs!(path_env = "AX_CONFIG_PATH", fallback = "axconfig.toml");
 }
+static_assertions::const_assert!(const_str::compare!(==, env!("CARGO_PKG_NAME"), config::PACKAGE));
 
 axplat_aarch64_common::console_if_impl!(ConsoleIfImpl);
 axplat_aarch64_common::time_if_impl!(TimeIfImpl);
