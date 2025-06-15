@@ -16,46 +16,38 @@ pub use crate_interface::impl_interface as impl_plat_interface;
 
 #[doc(hidden)]
 pub mod __priv {
+    pub use const_str::equal as const_str_eq;
     pub use crate_interface::{call_interface, def_interface};
 }
 
-/// Asserts that constant expressions evaluate to `true`.
+/// Checks that two strings are equal. If they are not equal, it will cause a compile-time
+/// error. And the message will be printed if it is provided.
 ///
-/// Constant expressions can be ensured to have certain properties via this
-/// macro. If the expression evaluates to `false`, the file will fail to compile.
+/// # Example
 ///
-/// # Examples
-///
-/// A common use case is to guarantee properties about a constant value that's
-/// generated via meta-programming.
-///
-/// ```
-/// #[macro_use]
+/// ```rust
 /// extern crate axplat;
-/// const VALUE: i32 = 3;
-/// const_assert!(VALUE >= 2);
-/// fn main() {}
+/// const A: &str = "hello";
+/// const B: &str = "hello";
+/// axplat::assert_str_eq!(A, B);
 /// ```
-///
-/// The following fails to compile because multiplying by 5 does not have an
-/// identity property:
 ///
 /// ```compile_fail
-/// #[macro_use]
 /// extern crate axplat;
-/// const_assert!(5 * 5 == 5);
-/// fn main() {}
+/// const A: &str = "hello";
+/// const B: &str = "world";
+/// axplat::assert_str_eq!(A, B, "A and B are not equal!");
 /// ```
-///
-/// This macro is a reference to [static_assert](https://crates.io/crates/static_assertions).
 #[macro_export]
-macro_rules! const_assert {
-    ($x:expr $(,)?) => {
-        #[allow(unknown_lints, eq_op)]
-        const _: [(); 0 - !{
-            const ASSERT: bool = $x;
-            ASSERT
-        } as usize] = [];
+macro_rules! assert_str_eq {
+    ($expect:expr, $actual:expr, $mes:literal) => {
+        const _: () = assert!($crate::__priv::const_str_eq!($expect, $actual), $mes);
+    };
+    ($expect:expr, $actual:expr $(,)?) => {
+        const _: () = assert!(
+            $crate::__priv::const_str_eq!($expect, $actual),
+            "assertion failed: expected != actual.",
+        );
     };
 }
 
