@@ -19,6 +19,17 @@ pub mod __priv {
     pub use crate_interface::{call_interface, def_interface};
 }
 
+#[macro_export]
+macro_rules! const_assert {
+    ($x:expr $(,)?) => {
+        #[allow(unknown_lints, eq_op)]
+        const _: [(); 0 - !{
+            const ASSERT: bool = $x;
+            ASSERT
+        } as usize] = [];
+    };
+}
+
 /// Call the function decorated by [`axplat::main`][main] for the primary core.
 ///
 /// This function should only be called by the platform implementer, not the kernel.

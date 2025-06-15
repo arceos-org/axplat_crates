@@ -22,8 +22,7 @@ mod mp;
 mod config {
     axconfig_macros::include_configs!(path_env = "AX_CONFIG_PATH", fallback = "axconfig.toml");
 }
-
-static_assertions::const_assert!(const_str::compare!(==, env!("CARGO_PKG_NAME"), config::PACKAGE));
+const_assert!(const_str::compare!(==, env!("CARGO_PKG_NAME"), config::PACKAGE));
 
 fn current_cpu_id() -> usize {
     match raw_cpuid::CpuId::new().get_feature_info() {

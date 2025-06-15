@@ -144,11 +144,9 @@ version = "0.1.0"
 dependencies = [
  "axplat-macros",
  "bitflags 2.9.1",
- "const-str",
  "crate_interface",
  "handler_table",
  "memory_addr",
- "static_assertions",
 ]
 
 [[package]]
@@ -165,7 +163,6 @@ dependencies = [
  "log",
  "memory_addr",
  "page_table_entry",
- "static_assertions",
 ]
 
 [[package]]
@@ -198,7 +195,6 @@ dependencies = [
  "log",
  "memory_addr",
  "page_table_entry",
- "static_assertions",
 ]
 
 [[package]]
@@ -213,7 +209,6 @@ dependencies = [
  "log",
  "memory_addr",
  "page_table_entry",
- "static_assertions",
 ]
 
 [[package]]
@@ -229,7 +224,6 @@ dependencies = [
  "log",
  "memory_addr",
  "page_table_entry",
- "static_assertions",
 ]
 
 [[package]]
@@ -248,7 +242,6 @@ dependencies = [
  "memory_addr",
  "ns16550a",
  "page_table_entry",
- "static_assertions",
 ]
 
 [[package]]
@@ -274,7 +267,6 @@ dependencies = [
  "riscv 0.13.0",
  "riscv_goldfish",
  "sbi-rt",
- "static_assertions",
 ]
 
 [[package]]
@@ -295,7 +287,6 @@ dependencies = [
  "multiboot",
  "percpu",
  "raw-cpuid 11.5.0",
- "static_assertions",
  "uart_16550",
  "x2apic",
  "x86",
