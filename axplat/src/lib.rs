@@ -19,6 +19,35 @@ pub mod __priv {
     pub use crate_interface::{call_interface, def_interface};
 }
 
+/// Asserts that constant expressions evaluate to `true`.
+///
+/// Constant expressions can be ensured to have certain properties via this
+/// macro. If the expression evaluates to `false`, the file will fail to compile.
+///
+/// # Examples
+///
+/// A common use case is to guarantee properties about a constant value that's
+/// generated via meta-programming.
+///
+/// ```
+/// #[macro_use]
+/// extern crate axplat;
+/// const VALUE: i32 = 3;
+/// const_assert!(VALUE >= 2);
+/// fn main() {}
+/// ```
+///
+/// The following fails to compile because multiplying by 5 does not have an
+/// identity property:
+///
+/// ```compile_fail
+/// #[macro_use]
+/// extern crate axplat;
+/// const_assert!(5 * 5 == 5);
+/// fn main() {}
+/// ```
+///
+/// This macro is a reference to [static_assert](https://crates.io/crates/static_assertions).
 #[macro_export]
 macro_rules! const_assert {
     ($x:expr $(,)?) => {
