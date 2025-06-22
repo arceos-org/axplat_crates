@@ -40,4 +40,14 @@ impl MemIf for MemIfImpl {
     fn mmio_ranges() -> &'static [RawRange] {
         &MMIO_RANGES
     }
+
+    /// Translates a physical address to a virtual address.
+    fn phys_to_virt(paddr: PhysAddr) -> VirtAddr {
+        phys_to_virt(paddr)
+    }
+
+    /// Translates a virtual address to a physical address.
+    fn virt_to_phys(vaddr: VirtAddr) -> PhysAddr {
+        virt_to_phys(vaddr)
+    }
 }
