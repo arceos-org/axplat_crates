@@ -6,14 +6,8 @@ use crate::config::plat::{PHYS_MEMORY_BASE, PHYS_MEMORY_SIZE, PHYS_VIRT_OFFSET};
 
 struct MemIfImpl;
 
-#[allow(dead_code)]
-pub const fn phys_to_virt(paddr: PhysAddr) -> VirtAddr {
+pub(crate) const fn phys_to_virt(paddr: PhysAddr) -> VirtAddr {
     va!(paddr.as_usize() + PHYS_VIRT_OFFSET)
-}
-
-#[allow(dead_code)]
-pub const fn virt_to_phys(vaddr: VirtAddr) -> PhysAddr {
-    pa!(vaddr.as_usize() - PHYS_VIRT_OFFSET)
 }
 
 #[impl_plat_interface]
@@ -49,6 +43,6 @@ impl MemIf for MemIfImpl {
 
     /// Translates a virtual address to a physical address.
     fn virt_to_phys(vaddr: VirtAddr) -> PhysAddr {
-        virt_to_phys(vaddr)
+        pa!(vaddr.as_usize() - PHYS_VIRT_OFFSET)
     }
 }
