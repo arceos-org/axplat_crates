@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["read_bytes","write_bytes"],"static":["CONSOLE_LOCK"],"trait":["ConsoleIf"]};

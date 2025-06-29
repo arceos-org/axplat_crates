@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["handle","register","set_enable","unregister"],"struct":["HandlerTable"],"trait":["IrqIf"],"type":["IrqHandler"]};
