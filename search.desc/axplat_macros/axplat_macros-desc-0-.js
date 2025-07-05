@@ -1,0 +1,1 @@
+searchState.loadedDescShard("axplat_macros", 0, "axplat-macros\nMarks a function to be called on the primary core after …\nMarks a function to be called on the secondary cores after …")
