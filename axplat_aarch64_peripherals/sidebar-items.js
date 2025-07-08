@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"macro":["console_if_impl","irq_if_impl","time_if_impl"],"mod":["generic_timer","gic","pl011","pl031","psci"]};

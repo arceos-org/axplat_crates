@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["current_ticks","enable_irqs","init_early","nanos_to_ticks","set_oneshot_timer","ticks_to_nanos"]};
