@@ -1,0 +1,2 @@
+createSrcSidebar('[["axplat",["",[],["console.rs","init.rs","irq.rs","lib.rs","mem.rs","power.rs","time.rs"]]],["axplat_aarch64_peripherals",["",[],["generic_timer.rs","gic.rs","lib.rs","pl011.rs","pl031.rs","psci.rs"]]],["axplat_macros",["",[],["lib.rs"]]]]');
+//{"start":19,"fragment_lengths":[91,110,37]}
