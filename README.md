@@ -16,6 +16,7 @@ Reusable crates used for [ArceOS](https://github.com/arceos-org/arceos) Hardware
 * [x] [axplat-aarch64-raspi](./platforms/axplat-aarch64-raspi)
 * [x] [axplat-aarch64-phytium-pi](./platforms/axplat-aarch64-phytium-pi)
 * [x] [axplat-aarch64-bsta1000b](./platforms/axplat-aarch64-bsta1000b)
+* [x] [axplat-aarch64-rk3588](./platforms/axplat-aarch64-rk3588)
 * [x] [axplat-loongarch64-qemu-virt](./platforms/axplat-loongarch64-qemu-virt)
 
 ## Utility crate

@@ -1,0 +1,73 @@
+# Architecture identifier.
+arch = "aarch64"                                # str
+# Platform identifier.
+platform = "aarch64-rk3588"                  # str
+# Platform package.
+package = "axplat-aarch64-rk3588"            # str
+
+#
+# Platform configs
+#
+[plat]
+# Number of CPUs.
+cpu-num = 8                         # uint
+# Base address of the whole physical memory.
+phys-memory-base = 0x0020_0000      # uint
+# Size of the whole physical memory.
+phys-memory-size = 0x4000_0000      # uint
+# Base physical address of the kernel image.
+kernel-base-paddr = 0x0040_0000      # uint
+# Base virtual address of the kernel image.
+kernel-base-vaddr = "0xffff_0000_0040_0000"     # uint
+# Linear mapping offset, for quick conversions between physical and virtual
+# addresses.
+phys-virt-offset = "0xffff_0000_0000_0000"      # uint
+# Offset of bus address and phys address. some boards, the bus address is
+# different from the physical address.
+phys-bus-offset = 0                             # uint
+# Kernel address space base.
+kernel-aspace-base = "0xffff_0000_0000_0000"    # uint
+# Kernel address space size.
+kernel-aspace-size = "0x0000_ffff_ffff_f000"    # uint
+# Stack size on bootstrapping. (256K)
+boot-stack-size = 0x40000                       # uint
+
+# PSCI
+psci-method = "smc"     # str
+
+# CPU Hardware ID list
+cpu-id-list = [0x00, 0x100, 0x200, 0x300, 0x400, 0x500, 0x600, 0x700]
+
+#
+# Device specifications
+#
+[devices]
+# MMIO ranges with format (`base_paddr`, `size`).
+mmio-ranges = [
+    [0xfd5f8000, 0x1000],  # bus ioc, len=0x100
+    [0xfd7c0000, 0x5c000], # cru
+    [0xfeb50000, 0x1000],  # uart8250
+    [0xfeba0000, 0x1000],  # uart7
+    [0xfec40000, 0x1000],  # gpio3, len=0x100
+    [0xfe600000, 0x20000], # arm,gic-v3
+    [0xfe680000, 0x100000],# arm,gic-v3
+    [0xfe180000, 0x10000], # rockchip,rk3588-pcie
+    [0xfe190000, 0x10000], # rockchip,rk3588-pcie
+]                           # [(uint, uint)]
+# VirtIO MMIO ranges with format (`base_paddr`, `size`).
+virtio-mmio-ranges = []     # [(uint, uint)]
+
+# UART Address
+uart-paddr = 0xfeb50000        # uint
+# UART IRQ number (SPI, 0xd5)
+uart-irq = 0x14d                 # uint
+
+# Timer interrupt num (PPI, physical timer).
+timer-irq = 30                # uint
+
+# GIC CPU Interface base address
+gicc-paddr = 0xfe610000        # uint
+# GIC Distributor base address
+gicd-paddr = 0xfe600000        # uint
+# GICR Address of rk3588
+gicr-paddr = 0xfe680000
