@@ -15,6 +15,7 @@ pub(super) mod vectors {
     pub const APIC_TIMER_VECTOR: u8 = 0xf0;
     pub const APIC_SPURIOUS_VECTOR: u8 = 0xf1;
     pub const APIC_ERROR_VECTOR: u8 = 0xf2;
+    pub const APIC_IPI_VECTOR: u8 = 0xf3;
 }
 
 const IO_APIC_BASE: PhysAddr = pa!(0xFEC0_0000);
@@ -153,6 +154,26 @@ mod irq_impl {
                 warn!("Unhandled IRQ {vector}");
             }
             unsafe { super::local_apic().end_of_interrupt() };
+        }
+
+        /// Returns the IRQ number of the IPI.
+        fn get_ipi_irq_num() -> usize {
+            super::APIC_IPI_VECTOR as usize
+        }
+
+        /// Sends Software Generated Interrupt (SGI)(s) (usually IPI) to the given dest CPU.
+        fn send_ipi_one(dest_cpu_id: usize, irq_num: usize) {
+            unsafe {
+                super::local_apic().send_ipi(irq_num as _, dest_cpu_id as _);
+            };
+        }
+
+        /// Sends a broadcast IPI to all CPUs.
+        fn send_ipi_all_others(irq_num: usize, _src_cpu_id: usize, _cpu_num: usize) {
+            use x2apic::lapic::IpiAllShorthand;
+            unsafe {
+                super::local_apic().send_ipi_all(irq_num as _, IpiAllShorthand::AllExcludingSelf);
+            };
         }
     }
 }

@@ -1,6 +1,6 @@
 //! ARM Generic Interrupt Controller (GIC).
 
-use arm_gicv2::{GicCpuInterface, GicDistributor};
+use arm_gicv2::{GicCpuInterface, GicDistributor, InterruptType, translate_irq};
 use axplat::irq::{HandlerTable, IrqHandler};
 use axplat::mem::VirtAddr;
 use kspin::SpinNoIrq;
@@ -60,6 +60,21 @@ pub fn handle_irq(_unused: usize) {
     });
 }
 
+/// Returns the IRQ number of the IPI.
+pub fn get_ipi_irq_num() -> usize {
+    translate_irq(1, InterruptType::SGI).unwrap()
+}
+
+/// Sends Software Generated Interrupt (SGI)(s) (usually IPI) to the given dest CPU.
+pub fn send_ipi_one(dest_cpu_id: usize, irq_num: usize) {
+    GICD.lock().send_sgi(dest_cpu_id, irq_num);
+}
+
+/// Sends a broadcast IPI to all CPUs.
+pub fn send_ipi_all_others(irq_num: usize, _src_cpu_id: usize, _cpu_num: usize) {
+    GICD.lock().send_sgi_all_except_self(irq_num);
+}
+
 /// Initializes GICD (for the primary CPU only).
 pub fn init_gicd(gicd_base: VirtAddr, gicc_base: VirtAddr) {
     info!("Initialize GICv2...");
@@ -111,6 +126,21 @@ macro_rules! irq_if_impl {
             /// also acknowledges the interrupt controller after handling.
             fn handle(irq: usize) {
                 $crate::gic::handle_irq(irq)
+            }
+
+            /// Returns the IRQ number of the IPI.
+            fn get_ipi_irq_num() -> usize {
+                $crate::gic::get_ipi_irq_num()
+            }
+
+            /// Sends Software Generated Interrupt (SGI)(s) (usually IPI) to the given dest CPU.
+            fn send_ipi_one(dest_cpu_id: usize, irq_num: usize) {
+                $crate::gic::send_ipi_one(dest_cpu_id, irq_num);
+            }
+
+            /// Sends a broadcast IPI to all CPUs.
+            fn send_ipi_all_others(irq_num: usize, _src_cpu_id: usize, _cpu_num: usize) {
+                $crate::gic::send_ipi_all_others(irq_num, _src_cpu_id, _cpu_num);
             }
         }
     };

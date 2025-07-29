@@ -19,7 +19,8 @@ lazyinit = "0.2"
 page_table_entry = "0.5"
 aarch64-cpu = "10.0"
 arm_pl011 = "0.1"
-arm_gicv2 = "0.1"
+# wait for the PR merged and released on crates.io, modify this to arm_gicv2 = "0.2"
+arm_gicv2 = { git = "https://github.com/arceos-hypervisor/arm_gicv2", branch = "ipi" }
 arm_pl031 = "0.2"
 axcpu = { workspace = true }
 axplat = { workspace = true, features = ["irq"] }

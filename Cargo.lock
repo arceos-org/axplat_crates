@@ -64,8 +64,7 @@ dependencies = [
 [[package]]
 name = "arm_gicv2"
 version = "0.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "47d25e73c949c69f75d1b9dba39c5475523403b31eb8c2fdc99da4dc33bc1aca"
+source = "git+https://github.com/arceos-hypervisor/arm_gicv2?branch=ipi#6d26ffecc3d44d5bc9ae69a71cb43bd2301ab438"
 dependencies = [
  "tock-registers 0.8.1",
 ]

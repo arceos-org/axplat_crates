@@ -58,4 +58,19 @@ impl IrqIf for IrqIfImpl {
             warn!("Unhandled IRQ {}", irq);
         }
     }
+
+    /// Returns the IRQ number of the IPI.
+    fn get_ipi_irq_num() -> usize {
+        todo!()
+    }
+
+    /// Sends Software Generated Interrupt (SGI)(s) (usually IPI) to the given dest CPU.
+    fn send_ipi_one(dest_cpu_id: usize, irq_num: usize) {
+        todo!()
+    }
+
+    /// Sends a broadcast IPI to all CPUs.
+    fn send_ipi_all_others(irq_num: usize, src_cpu_id: usize, cpu_num: usize) {
+        todo!()
+    }
 }
