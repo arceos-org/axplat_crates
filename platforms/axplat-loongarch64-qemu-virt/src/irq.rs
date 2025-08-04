@@ -1,4 +1,4 @@
-use axplat::irq::{HandlerTable, IrqHandler, IrqIf};
+use axplat::irq::{HandlerTable, IpiTarget, IrqHandler, IrqIf};
 use loongArch64::register::{
     ecfg::{self, LineBasedInterrupt},
     ticlr,
@@ -59,18 +59,8 @@ impl IrqIf for IrqIfImpl {
         }
     }
 
-    /// Returns the IRQ number of the IPI.
-    fn get_ipi_irq_num() -> usize {
-        todo!()
-    }
-
-    /// Sends Software Generated Interrupt (SGI)(s) (usually IPI) to the given dest CPU.
-    fn send_ipi_one(dest_cpu_id: usize, irq_num: usize) {
-        todo!()
-    }
-
-    /// Sends a broadcast IPI to all CPUs.
-    fn send_ipi_all_others(irq_num: usize, src_cpu_id: usize, cpu_num: usize) {
+    /// Sends an inter-processor interrupt (IPI) to the specified target CPU or all CPUs.
+    fn send_ipi(irq_num: usize, target: IpiTarget) {
         todo!()
     }
 }

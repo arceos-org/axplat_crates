@@ -1,9 +1,9 @@
 //! TODO: PLIC
 
-use axplat::irq::{HandlerTable, IrqHandler, IrqIf};
+use axplat::irq::{HandlerTable, IpiTarget, IrqHandler, IrqIf};
 use core::sync::atomic::{AtomicPtr, Ordering};
 use riscv::register::sie;
-use sbi_rt::{HartMask, send_ipi};
+use sbi_rt::HartMask;
 
 /// `Interrupt` bit in `scause`
 pub(super) const INTC_IRQ_BASE: usize = 1 << (usize::BITS - 1);
@@ -166,27 +166,29 @@ impl IrqIf for IrqIfImpl {
         )
     }
 
-    /// Returns the IRQ number of the IPI.
-    fn get_ipi_irq_num() -> usize {
-        S_SOFT
-    }
-
-    /// Sends Software Generated Interrupt (SGI)(s) (usually IPI) to the given dest CPU.
-    fn send_ipi_one(dest_cpu_id: usize, _irq_num: usize) {
-        let res = send_ipi(HartMask::from_mask_base(1, dest_cpu_id));
-        if res.is_err() {
-            warn!("send_ipi_one failed: {:?}", res);
-        }
-    }
-
-    /// Sends a broadcast IPI to all CPUs.
-    fn send_ipi_all_others(_irq_num: usize, src_cpu_id: usize, cpu_num: usize) {
-        for i in 0..cpu_num {
-            if i != src_cpu_id {
-                let res = send_ipi(HartMask::from_mask_base(1, i));
+    /// Sends an inter-processor interrupt (IPI) to the specified target CPU or all CPUs.
+    fn send_ipi(irq_num: usize, target: IpiTarget) {
+        match target {
+            IpiTarget::Current { cpu_id } => {
+                let res = sbi_rt::send_ipi(HartMask::from_mask_base(1 << cpu_id, 0));
                 if res.is_err() {
-                    warn!("send_ipi_all_others failed: {:?}", res);
-                    break;
+                    warn!("send_ipi failed: {:?}", res);
+                }
+            }
+            IpiTarget::Other { cpu_id } => {
+                let res = sbi_rt::send_ipi(HartMask::from_mask_base(1 << cpu_id, 0));
+                if res.is_err() {
+                    warn!("send_ipi failed: {:?}", res);
+                }
+            }
+            IpiTarget::AllExceptCurrent { cpu_id, cpu_num } => {
+                for i in 0..cpu_num {
+                    if i != cpu_id {
+                        let res = sbi_rt::send_ipi(HartMask::from_mask_base(1 << i, 0));
+                        if res.is_err() {
+                            warn!("send_ipi_all_others failed: {:?}", res);
+                        }
+                    }
                 }
             }
         }

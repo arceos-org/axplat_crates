@@ -105,7 +105,7 @@ pub fn init_secondary() {
 
 #[cfg(feature = "irq")]
 mod irq_impl {
-    use axplat::irq::{HandlerTable, IrqHandler, IrqIf};
+    use axplat::irq::{HandlerTable, IpiTarget, IrqHandler, IrqIf};
 
     /// The maximum number of IRQs.
     const MAX_IRQ_COUNT: usize = 256;
@@ -156,24 +156,30 @@ mod irq_impl {
             unsafe { super::local_apic().end_of_interrupt() };
         }
 
-        /// Returns the IRQ number of the IPI.
-        fn get_ipi_irq_num() -> usize {
-            super::APIC_IPI_VECTOR as usize
-        }
-
-        /// Sends Software Generated Interrupt (SGI)(s) (usually IPI) to the given dest CPU.
-        fn send_ipi_one(dest_cpu_id: usize, irq_num: usize) {
-            unsafe {
-                super::local_apic().send_ipi(irq_num as _, dest_cpu_id as _);
-            };
-        }
-
-        /// Sends a broadcast IPI to all CPUs.
-        fn send_ipi_all_others(irq_num: usize, _src_cpu_id: usize, _cpu_num: usize) {
-            use x2apic::lapic::IpiAllShorthand;
-            unsafe {
-                super::local_apic().send_ipi_all(irq_num as _, IpiAllShorthand::AllExcludingSelf);
-            };
+        /// Sends an inter-processor interrupt (IPI) to the specified target CPU or all CPUs.
+        fn send_ipi(irq_num: usize, target: IpiTarget) {
+            match target {
+                IpiTarget::Current { cpu_id } => {
+                    unsafe {
+                        super::local_apic().send_ipi_self(cpu_id as _);
+                    };
+                }
+                IpiTarget::Other { cpu_id } => {
+                    unsafe {
+                        super::local_apic().send_ipi(irq_num as _, cpu_id as _);
+                    };
+                }
+                IpiTarget::AllExceptCurrent {
+                    cpu_id: _,
+                    cpu_num: _,
+                } => {
+                    use x2apic::lapic::IpiAllShorthand;
+                    unsafe {
+                        super::local_apic()
+                            .send_ipi_all(irq_num as _, IpiAllShorthand::AllExcludingSelf);
+                    };
+                }
+            }
         }
     }
 }
