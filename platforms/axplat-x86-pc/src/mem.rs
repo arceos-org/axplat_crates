@@ -53,7 +53,7 @@ impl MemIf for MemIfImpl {
     ///
     /// Lower 1MiB memory is reserved and not allocatable.
     fn reserved_phys_ram_ranges() -> &'static [RawRange] {
-        &[(0, 0x100000)]
+        &[(0, 0x200000)]
     }
 
     /// Returns all device memory (MMIO) ranges on the platform.
