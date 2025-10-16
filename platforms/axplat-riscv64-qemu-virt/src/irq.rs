@@ -1,4 +1,4 @@
-//! TODO: PLIC
+//! Interrupt handling for RISC-V with PLIC support
 
 use axplat::irq::{HandlerTable, IpiTarget, IrqHandler, IrqIf};
 use core::sync::atomic::{AtomicPtr, Ordering};
@@ -47,6 +47,11 @@ macro_rules! with_cause {
 }
 
 pub(super) fn init_percpu() {
+    // Initialize PLIC
+    if let Err(e) = crate::plic::init() {
+        warn!("Failed to initialize PLIC: {:?}", e);
+    }
+    
     // enable soft interrupts, timer interrupts, and external interrupts
     unsafe {
         sie::set_ssoft();
@@ -60,9 +65,46 @@ struct IrqIfImpl;
 #[impl_plat_interface]
 impl IrqIf for IrqIfImpl {
     /// Enables or disables the given IRQ.
-    fn set_enable(irq: usize, _enabled: bool) {
-        // TODO: set enable in PLIC
-        warn!("set_enable is not implemented for IRQ {}", irq);
+    fn set_enable(irq: usize, enabled: bool) {
+        if irq & INTC_IRQ_BASE == 0 {
+            // Device-side interrupt - use PLIC
+            let plic = crate::plic::get();
+            if enabled {
+                if let Err(e) = plic.enable_interrupt(0, irq) { // Context 0 for supervisor mode
+                    warn!("Failed to enable interrupt {}: {:?}", irq, e);
+                }
+            } else if let Err(e) = plic.disable_interrupt(0, irq) {
+                warn!("Failed to disable interrupt {}: {:?}", irq, e);
+            }
+        } else {
+            // CPU-side interrupt - handled by CPU directly
+            match irq {
+                S_TIMER => {
+                    if enabled {
+                        unsafe { sie::set_stimer(); }
+                    } else {
+                        unsafe { sie::clear_stimer(); }
+                    }
+                }
+                S_SOFT => {
+                    if enabled {
+                        unsafe { sie::set_ssoft(); }
+                    } else {
+                        unsafe { sie::clear_ssoft(); }
+                    }
+                }
+                S_EXT => {
+                    if enabled {
+                        unsafe { sie::set_sext(); }
+                    } else {
+                        unsafe { sie::clear_sext(); }
+                    }
+                }
+                _ => {
+                    warn!("Unknown CPU-side IRQ: {}", irq);
+                }
+            }
+        }
     }
 
     /// Registers an IRQ handler for the given IRQ.
@@ -155,13 +197,33 @@ impl IrqIf for IrqIfImpl {
                 }
             },
             @S_EXT => {
-                // TODO: get IRQ number from PLIC
-                if !IRQ_HANDLER_TABLE.handle(0) {
-                    warn!("Unhandled IRQ {}", 0);
+                // Get IRQ number from PLIC
+                let plic = crate::plic::get();
+                match plic.claim(0) {
+                    Ok(Some(irq_num)) => {
+                        if !IRQ_HANDLER_TABLE.handle(irq_num) {
+                            warn!("Unhandled external IRQ {}", irq_num);
+                        }
+                        if let Err(e) = plic.complete(0, irq_num) {
+                            warn!("Failed to complete interrupt {}: {:?}", irq_num, e);
+                        }
+                    }
+                    Ok(None) => {
+                        // No interrupt to claim
+                    }
+                    Err(e) => {
+                        warn!("Failed to claim interrupt: {:?}", e);
+                    }
                 }
             },
             @EX_IRQ => {
-                unreachable!("Device-side IRQs should be handled by triggering the External Interrupt.");
+                // Device-side IRQs are handled directly through the handler table
+                // This should not be reached in normal operation, as device-side
+                // interrupts should trigger the External Interrupt (S_EXT) which
+                // then claims the interrupt from PLIC and calls the handler.
+                if !IRQ_HANDLER_TABLE.handle(irq) {
+                    warn!("Unhandled device-side IRQ {}", irq);
+                }
             }
         )
     }
