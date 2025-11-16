@@ -68,7 +68,7 @@ unsafe extern "C" fn _start() -> ! {
 #[cfg(feature = "smp")]
 #[unsafe(naked)]
 #[unsafe(no_mangle)]
-#[unsafe(link_section = ".text.boot")]
+#[unsafe(link_section = ".text")]
 unsafe extern "C" fn _start_secondary() -> ! {
     // a0 = hartid
     // a1 = SP
