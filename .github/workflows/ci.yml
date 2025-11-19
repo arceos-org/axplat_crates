@@ -46,6 +46,9 @@ jobs:
       run: |
         cargo run -p cargo-axplat -- axplat new /tmp/axplat-test
         cd /tmp/axplat-test
+        # patch Cargo.toml to use local axplat path
+        echo "[patch.crates-io]" >> Cargo.toml
+        echo "axplat = { path = \"${{ github.workspace }}/axplat\" }" >> Cargo.toml
         cargo build & cargo clippy
 
   platforms:
