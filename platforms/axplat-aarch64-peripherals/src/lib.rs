@@ -5,6 +5,7 @@
 extern crate log;
 
 pub mod generic_timer;
+#[cfg(feature = "irq")]
 pub mod gic;
 pub mod pl011;
 pub mod pl031;
