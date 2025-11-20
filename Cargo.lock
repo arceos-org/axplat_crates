@@ -260,11 +260,14 @@ dependencies = [
  "axconfig-macros",
  "axcpu",
  "axplat",
+ "kspin",
+ "lazyinit",
  "log",
  "riscv",
  "riscv_goldfish",
  "riscv_plic",
  "sbi-rt",
+ "uart_16550",
 ]
 
 [[package]]
