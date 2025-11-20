@@ -1,10 +1,17 @@
-//! TODO: PLIC
+use core::{
+    num::NonZeroU32,
+    sync::atomic::{AtomicPtr, Ordering},
+};
 
-use core::sync::atomic::{AtomicPtr, Ordering};
-
-use axplat::irq::{HandlerTable, IpiTarget, IrqHandler, IrqIf};
+use axplat::{
+    irq::{HandlerTable, IpiTarget, IrqHandler, IrqIf},
+    percpu::this_cpu_id,
+};
 use riscv::register::sie;
+use riscv_plic::Plic;
 use sbi_rt::HartMask;
+
+use crate::config::{devices::PLIC_PADDR, plat::PHYS_VIRT_OFFSET};
 
 /// `Interrupt` bit in `scause`
 pub(super) const INTC_IRQ_BASE: usize = 1 << (usize::BITS - 1);
@@ -28,6 +35,23 @@ pub const MAX_IRQ_COUNT: usize = 1024;
 
 static IRQ_HANDLER_TABLE: HandlerTable<MAX_IRQ_COUNT> = HandlerTable::new();
 
+static PLIC: Plic = unsafe { Plic::new(PHYS_VIRT_OFFSET + PLIC_PADDR) };
+
+fn this_context() -> usize {
+    let hart_id = this_cpu_id();
+    hart_id * 2 + 1 // supervisor context
+}
+
+pub(super) fn init_percpu() {
+    // enable soft interrupts, timer interrupts, and external interrupts
+    unsafe {
+        sie::set_ssoft();
+        sie::set_stimer();
+        sie::set_sext();
+    }
+    PLIC.init_by_context(this_context());
+}
+
 macro_rules! with_cause {
     ($cause: expr, @S_TIMER => $timer_op: expr, @S_SOFT => $ipi_op: expr, @S_EXT => $ext_op: expr, @EX_IRQ => $plic_op: expr $(,)?) => {
         match $cause {
@@ -47,23 +71,37 @@ macro_rules! with_cause {
     };
 }
 
-pub(super) fn init_percpu() {
-    // enable soft interrupts, timer interrupts, and external interrupts
-    unsafe {
-        sie::set_ssoft();
-        sie::set_stimer();
-        sie::set_sext();
-    }
-}
-
 struct IrqIfImpl;
 
 #[impl_plat_interface]
 impl IrqIf for IrqIfImpl {
     /// Enables or disables the given IRQ.
-    fn set_enable(irq: usize, _enabled: bool) {
-        // TODO: set enable in PLIC
-        warn!("set_enable is not implemented for IRQ {}", irq);
+    fn set_enable(irq: usize, enabled: bool) {
+        with_cause!(
+            irq,
+            @S_TIMER => {
+                unsafe {
+                    if enabled {
+                        sie::set_stimer();
+                    } else {
+                        sie::clear_stimer();
+                    }
+                }
+            },
+            @S_SOFT => {},
+            @S_EXT => {},
+            @EX_IRQ => {
+                let Some(irq) = NonZeroU32::new(irq as _) else {
+                    return;
+                };
+                if enabled {
+                    PLIC.set_priority(irq, 6);
+                    PLIC.enable(irq, this_context());
+                } else {
+                    PLIC.disable(irq, this_context());
+                }
+            }
+        );
     }
 
     /// Registers an IRQ handler for the given IRQ.
@@ -127,7 +165,7 @@ impl IrqIf for IrqIfImpl {
                 warn!("External IRQ should be got from PLIC, not scause");
                 None
             },
-            @EX_IRQ => IRQ_HANDLER_TABLE.unregister_handler(irq)
+            @EX_IRQ => IRQ_HANDLER_TABLE.unregister_handler(irq).inspect(|_| Self::set_enable(irq, false))
         )
     }
 
@@ -158,11 +196,15 @@ impl IrqIf for IrqIfImpl {
                 Some(irq)
             },
             @S_EXT => {
-                // TODO: get IRQ number from PLIC
-                if !IRQ_HANDLER_TABLE.handle(0) {
-                    warn!("Unhandled IRQ {}", 0);
+                let Some(irq) = PLIC.claim(this_context()) else {
+                    debug!("Spurious external IRQ");
+                    return None;
+                };
+                if !IRQ_HANDLER_TABLE.handle(irq.get() as usize) {
+                    debug!("Unhandled IRQ {irq}");
                 }
-                None
+                PLIC.complete(this_context(), irq);
+                Some(irq.get() as usize)
             },
             @EX_IRQ => {
                 unreachable!("Device-side IRQs should be handled by triggering the External Interrupt.");
