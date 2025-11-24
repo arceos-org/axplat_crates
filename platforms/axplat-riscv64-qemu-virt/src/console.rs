@@ -1,18 +1,15 @@
-use axplat::{
-    console::ConsoleIf,
-    mem::{pa, phys_to_virt},
-};
+use axplat::console::ConsoleIf;
 use kspin::SpinNoIrq;
 use lazyinit::LazyInit;
 use uart_16550::MmioSerialPort;
 
-use crate::config::devices::UART_PADDR;
+use crate::config::{devices::UART_PADDR, plat::PHYS_VIRT_OFFSET};
 
 static UART: LazyInit<SpinNoIrq<MmioSerialPort>> = LazyInit::new();
 
 pub(crate) fn init_early() {
     UART.init_once({
-        let mut uart = unsafe { MmioSerialPort::new(phys_to_virt(pa!(UART_PADDR)).as_usize()) };
+        let mut uart = unsafe { MmioSerialPort::new(UART_PADDR + PHYS_VIRT_OFFSET) };
         uart.init();
         SpinNoIrq::new(uart)
     });

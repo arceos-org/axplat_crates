@@ -64,7 +64,7 @@ macro_rules! with_cause {
                     $plic_op
                 } else {
                     // Other CPU-side interrupts
-                    panic!("Unknown IRQ cause: {}", other);
+                    panic!("Unknown IRQ cause: {other}");
                 }
             }
         }
@@ -94,6 +94,7 @@ impl IrqIf for IrqIfImpl {
                 let Some(irq) = NonZeroU32::new(irq as _) else {
                     return;
                 };
+                trace!("PLIC set enable: {irq} {enabled}");
                 if enabled {
                     PLIC.set_priority(irq, 6);
                     PLIC.enable(irq, this_context());
@@ -131,7 +132,7 @@ impl IrqIf for IrqIfImpl {
                     Self::set_enable(irq, true);
                     true
                 } else {
-                    warn!("register handler for External IRQ {} failed", irq);
+                    warn!("register handler for External IRQ {irq} failed");
                     false
                 }
             }
@@ -196,13 +197,12 @@ impl IrqIf for IrqIfImpl {
                 Some(irq)
             },
             @S_EXT => {
+                trace!("IRQ: external");
                 let Some(irq) = PLIC.claim(this_context()) else {
                     debug!("Spurious external IRQ");
                     return None;
                 };
-                if !IRQ_HANDLER_TABLE.handle(irq.get() as usize) {
-                    debug!("Unhandled IRQ {irq}");
-                }
+                IRQ_HANDLER_TABLE.handle(irq.get() as usize);
                 PLIC.complete(this_context(), irq);
                 Some(irq.get() as usize)
             },
@@ -218,13 +218,13 @@ impl IrqIf for IrqIfImpl {
             IpiTarget::Current { cpu_id } => {
                 let res = sbi_rt::send_ipi(HartMask::from_mask_base(1 << cpu_id, 0));
                 if res.is_err() {
-                    warn!("send_ipi failed: {:?}", res);
+                    warn!("send_ipi failed: {res:?}");
                 }
             }
             IpiTarget::Other { cpu_id } => {
                 let res = sbi_rt::send_ipi(HartMask::from_mask_base(1 << cpu_id, 0));
                 if res.is_err() {
-                    warn!("send_ipi failed: {:?}", res);
+                    warn!("send_ipi failed: {res:?}");
                 }
             }
             IpiTarget::AllExceptCurrent { cpu_id, cpu_num } => {
@@ -232,7 +232,7 @@ impl IrqIf for IrqIfImpl {
                     if i != cpu_id {
                         let res = sbi_rt::send_ipi(HartMask::from_mask_base(1 << i, 0));
                         if res.is_err() {
-                            warn!("send_ipi_all_others failed: {:?}", res);
+                            warn!("send_ipi_all_others failed: {res:?}");
                         }
                     }
                 }
