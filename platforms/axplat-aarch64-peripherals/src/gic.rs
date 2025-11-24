@@ -20,7 +20,9 @@ pub fn set_enable(irq: usize, enabled: bool) {
     let intid = unsafe { IntId::raw(irq as u32) };
     let gic = GIC.lock();
     gic.set_irq_enable(intid, enabled);
-    gic.set_cfg(intid, Trigger::Edge);
+    if !intid.is_private() {
+        gic.set_cfg(intid, Trigger::Edge);
+    }
 }
 
 /// Registers an IRQ handler for the given IRQ.
