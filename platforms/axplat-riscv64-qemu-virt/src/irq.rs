@@ -1,5 +1,6 @@
 use core::{
     num::NonZeroU32,
+    ptr::NonNull,
     sync::atomic::{AtomicPtr, Ordering},
 };
 
@@ -7,6 +8,7 @@ use axplat::{
     irq::{HandlerTable, IpiTarget, IrqHandler, IrqIf},
     percpu::this_cpu_id,
 };
+use kspin::SpinNoIrq;
 use riscv::register::sie;
 use riscv_plic::Plic;
 use sbi_rt::HartMask;
@@ -35,7 +37,9 @@ pub const MAX_IRQ_COUNT: usize = 1024;
 
 static IRQ_HANDLER_TABLE: HandlerTable<MAX_IRQ_COUNT> = HandlerTable::new();
 
-static PLIC: Plic = unsafe { Plic::new(PHYS_VIRT_OFFSET + PLIC_PADDR) };
+static PLIC: SpinNoIrq<Plic> = SpinNoIrq::new(unsafe {
+    Plic::new(NonNull::new((PHYS_VIRT_OFFSET + PLIC_PADDR) as *mut _).unwrap())
+});
 
 fn this_context() -> usize {
     let hart_id = this_cpu_id();
@@ -49,7 +53,7 @@ pub(super) fn init_percpu() {
         sie::set_stimer();
         sie::set_sext();
     }
-    PLIC.init_by_context(this_context());
+    PLIC.lock().init_by_context(this_context());
 }
 
 macro_rules! with_cause {
@@ -95,11 +99,12 @@ impl IrqIf for IrqIfImpl {
                     return;
                 };
                 trace!("PLIC set enable: {irq} {enabled}");
+                let mut plic = PLIC.lock();
                 if enabled {
-                    PLIC.set_priority(irq, 6);
-                    PLIC.enable(irq, this_context());
+                    plic.set_priority(irq, 6);
+                    plic.enable(irq, this_context());
                 } else {
-                    PLIC.disable(irq, this_context());
+                    plic.disable(irq, this_context());
                 }
             }
         );
@@ -197,13 +202,14 @@ impl IrqIf for IrqIfImpl {
                 Some(irq)
             },
             @S_EXT => {
-                trace!("IRQ: external");
-                let Some(irq) = PLIC.claim(this_context()) else {
+                let mut plic = PLIC.lock();
+                let Some(irq) = plic.claim(this_context()) else {
                     debug!("Spurious external IRQ");
                     return None;
                 };
+                trace!("IRQ: external {irq}");
                 IRQ_HANDLER_TABLE.handle(irq.get() as usize);
-                PLIC.complete(this_context(), irq);
+                plic.complete(this_context(), irq);
                 Some(irq.get() as usize)
             },
             @EX_IRQ => {
