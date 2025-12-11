@@ -164,8 +164,9 @@ mod irq_impl {
                     };
                 }
                 IpiTarget::Other { cpu_id } => {
+                    let apic_id = super::raw_apic_id(cpu_id as u8);
                     unsafe {
-                        super::local_apic().send_ipi(irq_num as _, cpu_id as _);
+                        super::local_apic().send_ipi(irq_num as _, apic_id as _);
                     };
                 }
                 IpiTarget::AllExceptCurrent {
