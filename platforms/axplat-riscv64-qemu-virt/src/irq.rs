@@ -156,7 +156,6 @@ impl IrqIf for IrqIfImpl {
                 unsafe {
                     riscv::register::sip::clear_ssoft();
                 }
-                Some(irq)
             },
             @S_EXT => {
                 // TODO: get IRQ number from PLIC
