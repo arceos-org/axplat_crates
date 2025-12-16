@@ -19,4 +19,10 @@ impl PowerIf for PowerImpl {
     fn system_off() -> ! {
         axplat_aarch64_peripherals::psci::system_off()
     }
+
+    /// Get the number of CPU cores available on this platform.
+    #[cfg(feature = "smp")]
+    fn cpu_num() -> usize {
+        crate::config::plat::CPU_NUM
+    }
 }
