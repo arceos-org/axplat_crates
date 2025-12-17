@@ -1,3 +1,5 @@
+//! Common per-CPU data structures and functions.
+
 #[percpu::def_percpu]
 static CPU_ID: usize = 0;
 
