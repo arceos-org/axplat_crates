@@ -29,7 +29,6 @@ impl PowerIf for PowerImpl {
     }
 
     /// Get the number of CPU cores available on this platform.
-    #[cfg(feature = "smp")]
     fn cpu_num() -> usize {
         crate::config::plat::CPU_NUM
     }

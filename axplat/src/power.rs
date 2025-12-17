@@ -18,6 +18,5 @@ pub trait PowerIf {
     ///
     /// The platform should either get this value statically from its
     /// configuration or dynamically by platform-specific methods.
-    #[cfg(feature = "smp")]
     fn cpu_num() -> usize;
 }
