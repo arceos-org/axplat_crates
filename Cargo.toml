@@ -14,6 +14,7 @@ members = [
     "platforms/axplat-aarch64-phytium-pi",
     "platforms/axplat-riscv64-qemu-virt",
     "platforms/axplat-loongarch64-qemu-virt",
+    "platforms/axplat-arm-qemu-virt",
 
     "examples/hello-kernel",
     "examples/irq-kernel",
