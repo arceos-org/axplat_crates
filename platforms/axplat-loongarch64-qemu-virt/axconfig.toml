@@ -11,7 +11,7 @@ package = "axplat-loongarch64-qemu-virt"        # str
 [plat]
 # Maximum number of CPUs. For platforms that does not support runtime CPU
 # detection, it's also the number of CPUs to boot.
-max-cpu-num = 1                             # uint
+max-cpu-num = 1                         # uint
 # Base address of the low physical memory.
 low-memory-base = 0x0                   # uint
 # Size of the low physical memory. (256M)
