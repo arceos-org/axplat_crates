@@ -54,6 +54,12 @@ pub fn raw_apic_id(id_u8: u8) -> u32 {
     }
 }
 
+#[cfg(not(feature = "smp"))]
+#[allow(unused)]
+pub fn raw_apic_id(_id_u8: u8) -> u32 {
+    0
+}
+
 fn cpu_has_x2apic() -> bool {
     match raw_cpuid::CpuId::new().get_feature_info() {
         Some(finfo) => finfo.has_x2apic(),
@@ -158,9 +164,9 @@ mod irq_impl {
         /// Sends an inter-processor interrupt (IPI) to the specified target CPU or all CPUs.
         fn send_ipi(irq_num: usize, target: IpiTarget) {
             match target {
-                IpiTarget::Current { cpu_id } => {
+                IpiTarget::Current { cpu_id: _ } => {
                     unsafe {
-                        super::local_apic().send_ipi_self(cpu_id as _);
+                        super::local_apic().send_ipi_self(irq_num as _);
                     };
                 }
                 IpiTarget::Other { cpu_id } => {
