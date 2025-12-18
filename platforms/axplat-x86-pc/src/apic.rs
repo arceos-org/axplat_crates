@@ -45,19 +45,13 @@ pub fn local_apic<'a>() -> &'a mut LocalApic {
     unsafe { LOCAL_APIC.assume_init_mut() }
 }
 
-#[cfg(feature = "smp")]
+#[cfg(any(feature = "smp", feature = "irq"))]
 pub fn raw_apic_id(id_u8: u8) -> u32 {
     if unsafe { IS_X2APIC } {
         id_u8 as u32
     } else {
         (id_u8 as u32) << 24
     }
-}
-
-#[cfg(not(feature = "smp"))]
-#[allow(unused)]
-pub fn raw_apic_id(_id_u8: u8) -> u32 {
-    0
 }
 
 fn cpu_has_x2apic() -> bool {
