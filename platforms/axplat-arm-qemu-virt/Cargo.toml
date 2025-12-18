@@ -1,0 +1,23 @@
+[package]
+name = "axplat-arm-qemu-virt"
+version = "0.1.0"
+edition = "2024"
+
+[features]
+irq = ["axplat/irq"]
+smp = []
+rtc = []
+default = []
+
+[dependencies]
+axplat = "0.2.0"
+axconfig-macros = "0.2"
+memory_addr = "0.4"
+kspin = "0.1"
+axcpu = "0.2"
+arm_pl011 = "0.1"
+lazy_static = { version = "1.5", features = ["spin_no_std"] }
+page_table_entry = {path = "../../../page_table_multiarch/page_table_entry"}
+aarch32-cpu = "0.1"
+log = "0.4"
+axplat-aarch64-peripherals = { version = "0.2", path = "../axplat-aarch64-peripherals" }
