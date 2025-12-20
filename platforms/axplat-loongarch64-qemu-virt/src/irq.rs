@@ -1,6 +1,6 @@
 use axplat::irq::{HandlerTable, IpiTarget, IrqHandler, IrqIf};
 use loongArch64::{
-    iocsr::iocsr_write_w,
+    iocsr::{iocsr_read_w, iocsr_write_w},
     register::{
         ecfg::{self, LineBasedInterrupt},
         ticlr,
@@ -20,6 +20,30 @@ const IOCSR_IPI_STATUS: usize = 0x1000;
 const IOCSR_IPI_ENABLE: usize = 0x1004;
 const IOCSR_IPI_CLEAR: usize = 0x100c;
 const IOCSR_IPI_SEND: usize = 0x1040;
+
+fn make_ipi_send_value(cpu_id: usize, vector: u32, blocking: bool) -> u32 {
+    let mut value = (cpu_id as u32) << IOCSR_IPI_SEND_CPU_SHIFT | vector;
+    if blocking {
+        value |= IOCSR_IPI_SEND_BLOCKING;
+    }
+    value
+}
+
+fn handle_ipi(irq: usize) {
+    let mut status = iocsr_read_w(IOCSR_IPI_STATUS);
+    if status == 0 {
+        return;
+    }
+    iocsr_write_w(IOCSR_IPI_CLEAR, status);
+    trace!("IPI status = {:#x}", status);
+    while status != 0 {
+        let vector = status.trailing_zeros() as usize;
+        status &= !(1 << vector);
+        if !IRQ_HANDLER_TABLE.handle(irq) {
+            warn!("Unhandled IRQ {}", irq);
+        }
+    }
+}
 
 static IRQ_HANDLER_TABLE: HandlerTable<MAX_IRQ_COUNT> = HandlerTable::new();
 
@@ -74,14 +98,16 @@ impl IrqIf for IrqIfImpl {
     /// IRQ handler table and calls the corresponding handler. If necessary, it
     /// also acknowledges the interrupt controller after handling.
     fn handle(irq: usize) {
-        if irq == TIMER_IRQ {
-            ticlr::clear_timer_interrupt();
-        } else if irq == IPI_IRQ {
-            iocsr_write_w(IOCSR_IPI_CLEAR, 0x1);
-        }
-        trace!("IRQ {}", irq);
-        if !IRQ_HANDLER_TABLE.handle(irq) {
-            warn!("Unhandled IRQ {}", irq);
+        if irq == IPI_IRQ {
+            handle_ipi(irq);
+        } else {
+            if irq == TIMER_IRQ {
+                ticlr::clear_timer_interrupt();
+            }
+            trace!("IRQ {}", irq);
+            if !IRQ_HANDLER_TABLE.handle(irq) {
+                warn!("Unhandled IRQ {}", irq);
+            }
         }
     }
 
@@ -89,24 +115,15 @@ impl IrqIf for IrqIfImpl {
     fn send_ipi(_irq_num: usize, target: IpiTarget) {
         match target {
             IpiTarget::Current { cpu_id } => {
-                iocsr_write_w(
-                    IOCSR_IPI_SEND,
-                    (cpu_id as u32) << IOCSR_IPI_SEND_CPU_SHIFT | IOCSR_IPI_SEND_BLOCKING,
-                );
+                iocsr_write_w(IOCSR_IPI_SEND, make_ipi_send_value(cpu_id, 0, true));
             }
             IpiTarget::Other { cpu_id } => {
-                iocsr_write_w(
-                    IOCSR_IPI_SEND,
-                    (cpu_id as u32) << IOCSR_IPI_SEND_CPU_SHIFT | IOCSR_IPI_SEND_BLOCKING,
-                );
+                iocsr_write_w(IOCSR_IPI_SEND, make_ipi_send_value(cpu_id, 0, true));
             }
             IpiTarget::AllExceptCurrent { cpu_id, cpu_num } => {
                 for i in 0..cpu_num {
                     if i != cpu_id {
-                        iocsr_write_w(
-                            IOCSR_IPI_SEND,
-                            (i as u32) << IOCSR_IPI_SEND_CPU_SHIFT | IOCSR_IPI_SEND_BLOCKING,
-                        );
+                        iocsr_write_w(IOCSR_IPI_SEND, make_ipi_send_value(i, 0, true));
                     }
                 }
             }
