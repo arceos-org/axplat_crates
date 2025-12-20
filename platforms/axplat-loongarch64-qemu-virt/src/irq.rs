@@ -16,10 +16,10 @@ const IOCSR_IPI_SEND_BLOCKING: u32 = 1 << 31;
 
 // [Loongson 3A5000 Manual](https://loongson.github.io/LoongArch-Documentation/Loongson-3A5000-usermanual-EN.html)
 // See Section 10.2 for details about IPI registers
-const IOCSR_IPI_STATUS: u32 = 0x1000;
-const IOCSR_IPI_ENABLE: u32 = 0x1004;
-const IOCSR_IPI_CLEAR: u32 = 0x100c;
-const IOCSR_IPI_SEND: u32 = 0x1040;
+const IOCSR_IPI_STATUS: usize = 0x1000;
+const IOCSR_IPI_ENABLE: usize = 0x1004;
+const IOCSR_IPI_CLEAR: usize = 0x100c;
+const IOCSR_IPI_SEND: usize = 0x1040;
 
 static IRQ_HANDLER_TABLE: HandlerTable<MAX_IRQ_COUNT> = HandlerTable::new();
 
