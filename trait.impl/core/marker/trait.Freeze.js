@@ -1,0 +1,9 @@
+(function() {
+    const implementors = Object.fromEntries([["axplat",[["impl <a class=\"trait\" href=\"https://doc.rust-lang.org/nightly/core/marker/trait.Freeze.html\" title=\"trait core::marker::Freeze\">Freeze</a> for <a class=\"enum\" href=\"axplat/irq/enum.IpiTarget.html\" title=\"enum axplat::irq::IpiTarget\">IpiTarget</a>",0,1,["axplat::irq::IpiTarget"]],["impl <a class=\"trait\" href=\"https://doc.rust-lang.org/nightly/core/marker/trait.Freeze.html\" title=\"trait core::marker::Freeze\">Freeze</a> for <a class=\"struct\" href=\"axplat/mem/struct.MemRegionFlags.html\" title=\"struct axplat::mem::MemRegionFlags\">MemRegionFlags</a>",0,1,["axplat::mem::MemRegionFlags"]],["impl <a class=\"trait\" href=\"https://doc.rust-lang.org/nightly/core/marker/trait.Freeze.html\" title=\"trait core::marker::Freeze\">Freeze</a> for <a class=\"struct\" href=\"axplat/mem/struct.PhysMemRegion.html\" title=\"struct axplat::mem::PhysMemRegion\">PhysMemRegion</a>",0,1,["axplat::mem::PhysMemRegion"]],["impl&lt;T&gt; <a class=\"trait\" href=\"https://doc.rust-lang.org/nightly/core/marker/trait.Freeze.html\" title=\"trait core::marker::Freeze\">Freeze</a> for <a class=\"struct\" href=\"axplat/mem/struct.Aligned4K.html\" title=\"struct axplat::mem::Aligned4K\">Aligned4K</a>&lt;T&gt;<div class=\"where\">where\n    T: <a class=\"trait\" href=\"https://doc.rust-lang.org/nightly/core/marker/trait.Freeze.html\" title=\"trait core::marker::Freeze\">Freeze</a>,</div>",0,1,["axplat::mem::Aligned4K"]]]]]);
+    if (window.register_implementors) {
+        window.register_implementors(implementors);
+    } else {
+        window.pending_implementors = implementors;
+    }
+})()
+//{"start":59,"fragment_lengths":[1441]}
