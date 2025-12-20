@@ -7,8 +7,16 @@ impl InitIf for InitIfImpl {
     /// This function should be called immediately after the kernel has booted,
     /// and performed earliest platform configuration and initialization (e.g.,
     /// early console, clocking).
-    fn init_early(_cpu_id: usize, _mbi: usize) {
+    fn init_early(_cpu_id: usize, dtb: usize) {
         axcpu::init::init_trap();
+        
+        // Initialize device tree parser
+        unsafe {
+            if let Err(e) = crate::dtb::init(dtb as *const u8) {
+                warn!("Failed to initialize DTB parser: {}", e);
+            }
+        }
+        
         crate::time::init_early();
     }
 
