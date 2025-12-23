@@ -1,17 +1,36 @@
 use axplat::irq::{HandlerTable, IpiTarget, IrqHandler, IrqIf};
-use loongArch64::register::{
-    ecfg::{self, LineBasedInterrupt},
-    ticlr,
+use loongArch64::{
+    iocsr::iocsr_write_w,
+    register::{
+        ecfg::{self, LineBasedInterrupt},
+        ticlr,
+    },
 };
 
-use crate::config::devices::{EIOINTC_IRQ, TIMER_IRQ};
+use crate::config::devices::{EIOINTC_IRQ, IPI_IRQ, TIMER_IRQ};
 
 // TODO: move these modules to a separate crate
 mod eiointc;
 mod pch_pic;
 
 /// The maximum number of IRQs.
-pub const MAX_IRQ_COUNT: usize = 12;
+pub const MAX_IRQ_COUNT: usize = 13;
+const IOCSR_IPI_SEND_CPU_SHIFT: u32 = 16;
+const IOCSR_IPI_SEND_BLOCKING: u32 = 1 << 31;
+
+// [Loongson 3A5000 Manual](https://loongson.github.io/LoongArch-Documentation/Loongson-3A5000-usermanual-EN.html)
+// See Section 10.2 for details about IPI registers
+const IOCSR_IPI_ENABLE: usize = 0x1004;
+const IOCSR_IPI_CLEAR: usize = 0x100c;
+const IOCSR_IPI_SEND: usize = 0x1040;
+
+fn make_ipi_send_value(cpu_id: usize, vector: u32, blocking: bool) -> u32 {
+    let mut value = (cpu_id as u32) << IOCSR_IPI_SEND_CPU_SHIFT | vector;
+    if blocking {
+        value |= IOCSR_IPI_SEND_BLOCKING;
+    }
+    value
+}
 
 static IRQ_HANDLER_TABLE: HandlerTable<MAX_IRQ_COUNT> = HandlerTable::new();
 
@@ -23,6 +42,7 @@ pub(crate) fn init() {
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 enum IrqType {
     Timer,
+    Ipi,
     Io,
     Ex(usize),
 }
@@ -31,6 +51,7 @@ impl IrqType {
     fn new(irq: usize) -> Self {
         match irq {
             TIMER_IRQ => Self::Timer,
+            IPI_IRQ => Self::Ipi,
             EIOINTC_IRQ => Self::Io,
             n => Self::Ex(n),
         }
@@ -39,6 +60,7 @@ impl IrqType {
     fn as_usize(&self) -> usize {
         match self {
             IrqType::Timer => TIMER_IRQ,
+            IrqType::Ipi => IPI_IRQ,
             IrqType::Io => EIOINTC_IRQ,
             IrqType::Ex(n) => *n,
         }
@@ -59,6 +81,16 @@ impl IrqIf for IrqIfImpl {
                 let new_value = match enabled {
                     true => old_value | LineBasedInterrupt::TIMER,
                     false => old_value & !LineBasedInterrupt::TIMER,
+                };
+                ecfg::set_lie(new_value);
+            }
+            IrqType::Ipi => {
+                let enable_value = if enabled { u32::MAX } else { 0 };
+                iocsr_write_w(IOCSR_IPI_ENABLE, enable_value);
+                let old_value = ecfg::read().lie();
+                let new_value = match enabled {
+                    true => old_value | LineBasedInterrupt::IPI,
+                    false => old_value & !LineBasedInterrupt::IPI,
                 };
                 ecfg::set_lie(new_value);
             }
@@ -121,6 +153,9 @@ impl IrqIf for IrqIfImpl {
             IrqType::Timer => {
                 ticlr::clear_timer_interrupt();
             }
+            IrqType::Ipi => {
+                iocsr_write_w(IOCSR_IPI_CLEAR, 0x1);
+            }
             IrqType::Io => {}
             IrqType::Ex(irq) => {
                 eiointc::complete_irq(irq);
@@ -131,7 +166,21 @@ impl IrqIf for IrqIfImpl {
     }
 
     /// Sends an inter-processor interrupt (IPI) to the specified target CPU or all CPUs.
-    fn send_ipi(_irq_num: usize, _target: IpiTarget) {
-        todo!()
+    fn send_ipi(_irq_num: usize, target: IpiTarget) {
+        match target {
+            IpiTarget::Current { cpu_id } => {
+                iocsr_write_w(IOCSR_IPI_SEND, make_ipi_send_value(cpu_id, 0, true));
+            }
+            IpiTarget::Other { cpu_id } => {
+                iocsr_write_w(IOCSR_IPI_SEND, make_ipi_send_value(cpu_id, 0, true));
+            }
+            IpiTarget::AllExceptCurrent { cpu_id, cpu_num } => {
+                for i in 0..cpu_num {
+                    if i != cpu_id {
+                        iocsr_write_w(IOCSR_IPI_SEND, make_ipi_send_value(i, 0, true));
+                    }
+                }
+            }
+        }
     }
 }
