@@ -55,7 +55,7 @@ impl axplat::init::InitIf for InitIfImpl {
     fn init_later_secondary(_cpu_id: usize) {
         #[cfg(feature = "irq")]
         {
-            crate::irq::init_current_cpu();
+            axplat_aarch64_peripherals::gic::init_gicc();
             crate::generic_timer::enable_irqs(TIMER_IRQ);
         }
     }
