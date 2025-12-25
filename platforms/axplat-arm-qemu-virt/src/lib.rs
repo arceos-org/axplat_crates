@@ -22,9 +22,7 @@ mod boot;
 mod generic_timer;
 mod init;
 mod mem;
-// mod pl011;
 mod power;
-// mod psci;
 
 axplat_aarch64_peripherals::console_if_impl!(ConsoleIfImpl);
 
