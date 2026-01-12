@@ -12,8 +12,10 @@ else ifeq ($(ARCH), riscv64)
   TARGET := riscv64gc-unknown-none-elf
 else ifeq ($(ARCH), loongarch64)
   TARGET := loongarch64-unknown-none-softfloat
+else ifeq ($(ARCH), arm)
+  TARGET := armv7a-none-eabi
 else
-  $(error "ARCH" must be one of "x86_64", "riscv64", "aarch64" or "loongarch64")
+  $(error "ARCH" must be one of "x86_64", "riscv64", "aarch64", "loongarch64" or "arm")
 endif
 
 export AX_CPU_NUM=$(SMP)
@@ -39,6 +41,11 @@ qemu_args-loongarch64 := \
   -machine virt \
   -m 1G \
   -kernel $(OUT_ELF)
+
+qemu_args-arm := \
+  -machine virt \
+  -m 1G \
+  -kernel $(OUT_BIN)
 
 qemu_args-y := -smp $(SMP) $(qemu_args-$(ARCH))
 

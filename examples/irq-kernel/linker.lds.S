@@ -47,7 +47,7 @@ SECTIONS
     _ekernel = .;
 
     /DISCARD/ : {
-        *(.comment)
+        *(.comment) *(.ARM.exidx*)
     }
 }
 
