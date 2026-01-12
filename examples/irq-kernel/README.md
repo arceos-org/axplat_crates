@@ -8,7 +8,7 @@ A minimal example of a kernel with timer interrupt support using [axplat](../../
 make ARCH=<arch> run
 ```
 
-Where `<arch>` is one of `x86_64`, `aarch64`, `riscv64`, or `loongarch64`.
+Where `<arch>` is one of `x86_64`, `aarch64`, `riscv64`, `loongarch64` or `arm`.
 
 It will run the minimal kernel in QEMU and output a message of the following form:
 
