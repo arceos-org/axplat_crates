@@ -41,7 +41,11 @@ pub unsafe fn init_boot_page_table(pt_ptr: *mut u32) {
         MappingFlags::READ | MappingFlags::WRITE | MappingFlags::EXECUTE,
         true, // 1MB section
     );
-    unsafe { pt_ptr.add(0x4000_0000 >> 20).write_volatile(entry1.bits() as u32) };
+    unsafe {
+        pt_ptr
+            .add(0x4000_0000 >> 20)
+            .write_volatile(entry1.bits() as u32)
+    };
 
     // 2. Kernel Linear Map (High 2GB - TTBR1 region):
     //    Map physical RAM (PHY_MEM_BASE) to KERNEL_BASE in high memory.
@@ -71,13 +75,17 @@ pub unsafe fn init_boot_page_table(pt_ptr: *mut u32) {
         MappingFlags::READ | MappingFlags::WRITE | MappingFlags::DEVICE,
         true, // 1MB section
     );
-    unsafe { pt_ptr.add(UART_PADDR >> 20).write_volatile(entry3.bits() as u32) };
+    unsafe {
+        pt_ptr
+            .add(UART_PADDR >> 20)
+            .write_volatile(entry3.bits() as u32)
+    };
 }
 
 #[unsafe(naked)]
 #[unsafe(no_mangle)]
 #[unsafe(link_section = ".text.boot")]
-pub unsafe extern "C" fn _start() -> !{
+pub unsafe extern "C" fn _start() -> ! {
     core::arch::naked_asm!(
         "
         // Calculate the physical offset
@@ -135,57 +143,10 @@ pub unsafe extern "C" fn _start() -> !{
         BOOT_STACK_SIZE = const BOOT_STACK_SIZE,
         rust_main = sym crate::rust_main,
         init_page_tables = sym init_page_tables,
-        init_mmu = sym init_mmu,
+        init_mmu = sym axcpu::init::init_mmu,
         boot_stack = sym BOOT_STACK,
         boot_pt = sym BOOT_PT,
     )
-}
-
-pub unsafe fn init_mmu(root_paddr: memory_addr::PhysAddr) {
-    use core::arch::asm;
-
-    let root = root_paddr.as_usize() as u32;
-
-    unsafe {
-        // Set TTBR0 (Translation Table Base Register 0) - for low 2GB
-        // Used for addresses 0x0000_0000 ~ 0x7FFF_FFFF
-        asm!("mcr p15, 0, {}, c2, c0, 0", in(reg) root); // TTBR0
-
-        // Set TTBR1 (Translation Table Base Register 1) - for high 2GB
-        // Used for addresses 0x8000_0000 ~ 0xFFFF_FFFF
-        // During boot, we use the same page table for simplicity
-        asm!("mcr p15, 0, {}, c2, c0, 1", in(reg) root); // TTBR1
-
-        // Set TTBCR.N=1 to enable address space split at 2GB boundary
-        // Bits [2:0] = N = 1:
-        //   - TTBR0 for VA[31:31] = 0 (addresses < 0x8000_0000)
-        //   - TTBR1 for VA[31:31] = 1 (addresses >= 0x8000_0000)
-        asm!("mcr p15, 0, {}, c2, c0, 2", in(reg) 1u32); // TTBCR
-
-        // Set Domain Access Control Register (all domains to client mode)
-        // Domain 0-15: 01 = Client (check page table permissions)
-        asm!("mcr p15, 0, {}, c3, c0, 0", in(reg) 0x55555555u32);
-
-        // Data Synchronization Barrier
-        asm!("dsb");
-
-        // Instruction Synchronization Barrier
-        asm!("isb");
-
-        // Read SCTLR (System Control Register)
-        let mut sctlr: u32;
-        asm!("mrc p15, 0, {}, c1, c0, 0", out(reg) sctlr);
-
-        // Enable MMU (M bit), data cache (C bit), instruction cache (I bit)
-        sctlr |= (1 << 0) | (1 << 2) | (1 << 12);
-
-        // Write back SCTLR
-        asm!("mcr p15, 0, {}, c1, c0, 0", in(reg) sctlr);
-
-        // Synchronization barriers
-        asm!("dsb");
-        asm!("isb");
-    }
 }
 
 /// The earliest entry point for the secondary CPUs.
@@ -221,7 +182,7 @@ pub(crate) unsafe extern "C" fn _start_secondary() -> ! {
         KERNEL_BASE = const KERNEL_BASE,
         PHY_MEM_BASE = const PHY_MEM_BASE,
         boot_pt = sym BOOT_PT,
-        init_mmu = sym init_mmu,
+        init_mmu = sym axcpu::init::init_mmu,
         entry = sym axplat::call_secondary_main,
     )
 }
