@@ -597,6 +597,7 @@ dependencies = [
  "axcpu",
  "axplat",
  "axplat-aarch64-qemu-virt",
+ "axplat-arm-qemu-virt",
  "axplat-loongarch64-qemu-virt",
  "axplat-riscv64-qemu-virt",
  "axplat-x86-pc",
@@ -627,6 +628,7 @@ dependencies = [
  "axcpu",
  "axplat",
  "axplat-aarch64-qemu-virt",
+ "axplat-arm-qemu-virt",
  "axplat-loongarch64-qemu-virt",
  "axplat-riscv64-qemu-virt",
  "axplat-x86-pc",
@@ -664,6 +666,15 @@ checksum = "3d841fd3aeaa9a55871068f5c3ce48497a6dbcf14e20ca7784a9f68bfdb4c825"
 dependencies = [
  "cfg-if",
  "kernel_guard",
+]
+
+[[package]]
+name = "lazy_static"
+version = "1.5.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "bbd2bcb4c963f2ddae06a2efc7e9f3591312473c50c6685e1f298068316e66fe"
+dependencies = [
+ "spin 0.9.8",
 ]
 
 [[package]]
@@ -986,6 +997,7 @@ dependencies = [
  "axcpu",
  "axplat",
  "axplat-aarch64-qemu-virt",
+ "axplat-arm-qemu-virt",
  "axplat-loongarch64-qemu-virt",
  "axplat-riscv64-qemu-virt",
  "axplat-x86-pc",
