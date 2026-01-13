@@ -14,12 +14,38 @@ impl MemIf for MemIfImpl {
     /// All memory ranges except reserved ranges (including the kernel loaded
     /// range) are free for allocation.
     fn phys_ram_ranges() -> &'static [RawRange] {
-        // TODO: paser dtb to get the available memory ranges
-        // We can't directly use `PHYS_MEMORY_BASE` here, because it may has been used by sbi.
-        &[(
+        // Try to get memory ranges from device tree first
+        if let Some(dtb_parser) = crate::dtb::get() {
+            let dtb_ranges = dtb_parser.get_memory_ranges();
+            if !dtb_ranges.is_empty() {
+                // Convert DTB ranges to static format
+                // We use a simple approach with a fixed-size array for now
+                static mut DTB_RANGES: [RawRange; 4] = [(0, 0); 4];
+                static mut RANGE_COUNT: usize = 0;
+                static mut INITIALIZED: bool = false;
+                
+                unsafe {
+                    if !INITIALIZED {
+                        RANGE_COUNT = dtb_ranges.len().min(4);
+                        for (i, range) in dtb_ranges.iter().take(4).enumerate() {
+                            DTB_RANGES[i] = (range.base as usize, range.size as usize);
+                        }
+                        INITIALIZED = true;
+                    }
+                    
+                    if RANGE_COUNT > 0 {
+                        return &DTB_RANGES[..RANGE_COUNT];
+                    }
+                }
+            }
+        }
+        
+        // Fallback to configuration-based ranges
+        static DEFAULT_RANGES: [RawRange; 1] = [(
             KERNEL_BASE_PADDR,
             PHYS_MEMORY_BASE + PHYS_MEMORY_SIZE - KERNEL_BASE_PADDR,
-        )]
+        )];
+        &DEFAULT_RANGES
     }
 
     /// Returns all reserved physical memory ranges on the platform.
