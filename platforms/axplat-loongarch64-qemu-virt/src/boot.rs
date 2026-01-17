@@ -65,14 +65,26 @@ unsafe extern "C" fn _start() -> ! {
         lu52i.d     $t0, $t0, -1792     # CA, PLV0, 0x9000 xxxx xxxx xxxx
         csrwr       $t0, 0x181          # LOONGARCH_CSR_DMWIN1
 
-        # Setup Stack
+        # Setup Stack (use DMW1 mapped address)
         la.global   $sp, {boot_stack}
         li.d        $t0, {boot_stack_size}
         add.d       $sp, $sp, $t0       # setup boot stack
 
-        # Init MMU
+        # Enable FP/SIMD and init page table
         bl          {enable_fp_simd}    # enable FP/SIMD instructions
         bl          {init_boot_page_table}
+
+        # Jump to high address (DMW1 mapped) before enabling MMU
+        # la.global uses PC-relative addressing, which won't work here
+        # We need to add the DMW1 offset (0x9000_0000_0000_0000) to current PC
+        pcaddi      $t0, 0              # get current PC
+        ori         $t1, $zero, 0
+        lu52i.d     $t1, $t1, -1792     # $t1 = 0x9000_0000_0000_0000 (DMW1 offset)
+        add.d       $t0, $t0, $t1       # convert to DMW1 mapped address
+        addi.d      $t0, $t0, 16        # skip to next instruction (after jirl)
+        jirl        $zero, $t0, 0
+
+        # Now running at DMW1 mapped virtual address (0x9000_xxxx)
         bl          {init_mmu}          # setup boot page table and enable MMU
 
         csrrd       $a0, 0x20           # cpuid
