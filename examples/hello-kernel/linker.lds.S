@@ -2,22 +2,23 @@ ENTRY(_start)
 SECTIONS
 {
     . = %KERNEL_BASE%;
+    _phys_base = %PHYS_BASE%;
     _skernel = .;
 
-    .text : ALIGN(4K) {
+    .text : AT(_phys_base + ADDR(.text) - _skernel) ALIGN(4K) {
         _stext = .;
         *(.text.boot)
         *(.text .text.*)
         _etext = .;
     }
 
-    .rodata : ALIGN(4K) {
+    .rodata : AT(_phys_base + ADDR(.rodata) - _skernel) ALIGN(4K) {
         _srodata = .;
         *(.rodata .rodata.*)
         _erodata = .;
     }
 
-    .data : ALIGN(4K) {
+    .data : AT(_phys_base + ADDR(.data) - _skernel) ALIGN(4K) {
         _sdata = .;
         *(.data .data.*)
         *(.got .got.*)
@@ -35,7 +36,7 @@ SECTIONS
     . = _percpu_end;
     _edata = .;
 
-    .bss : AT(.) ALIGN(4K) {
+    .bss : AT(_phys_base + ADDR(.bss) - _skernel) ALIGN(4K) {
         *(.bss.stack)
         . = ALIGN(4K);
         _sbss = .;

@@ -9,6 +9,8 @@ impl InitIf for InitIfImpl {
     /// early console, clocking).
     fn init_early(_cpu_id: usize, _mbi: usize) {
         axcpu::init::init_trap();
+        // Note: QEMU's ns16550a UART is already initialized by firmware,
+        // no need to call console::init() here.
         crate::time::init_early();
     }
 
