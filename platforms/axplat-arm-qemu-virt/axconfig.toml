@@ -22,7 +22,7 @@ kernel-base-paddr = 0x4001_0000     # uint
 kernel-base-vaddr = "0xC0010000"     # uint
 # Linear mapping offset, for quick conversions between physical and virtual
 # addresses.
-phys-virt-offset = "0x0000"      # uint
+phys-virt-offset = "0x80000000"      # uint
 # Offset of bus address and phys address. some boards, the bus address is
 # different from the physical address.
 phys-bus-offset = 0                             # uint
