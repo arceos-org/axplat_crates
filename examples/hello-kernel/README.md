@@ -8,7 +8,7 @@ A minimal example of writing a kernel using [axplat](../../axplat) and related [
 make ARCH=<arch> run
 ```
 
-Where `<arch>` is one of `x86_64`, `aarch64`, `riscv64`, or `loongarch64`.
+Where `<arch>` is one of `x86_64`, `aarch64`, `riscv64`, `loongarch64` or `arm`.
 
 It will run the minimal kernel in QEMU and output the following message:
 

@@ -9,7 +9,7 @@ jobs:
       fail-fast: false
       matrix:
         rust-toolchain: [nightly]
-        target: [x86_64-unknown-linux-gnu, x86_64-unknown-none, riscv64gc-unknown-none-elf, aarch64-unknown-none, loongarch64-unknown-none]
+        target: [x86_64-unknown-linux-gnu, x86_64-unknown-none, riscv64gc-unknown-none-elf, aarch64-unknown-none, loongarch64-unknown-none, armv7a-none-eabi]
     steps:
     - uses: actions/checkout@v4
     - uses: dtolnay/rust-toolchain@nightly
@@ -87,14 +87,14 @@ jobs:
       fail-fast: false
       matrix:
         rust-toolchain: [nightly]
-        arch: [x86_64, aarch64, riscv64, loongarch64]
+        arch: [x86_64, aarch64, riscv64, loongarch64, arm]
     steps:
     - uses: actions/checkout@v4
     - uses: dtolnay/rust-toolchain@nightly
       with:
         toolchain: ${{ matrix.rust-toolchain }}
         components: rust-src, clippy
-        targets: x86_64-unknown-none, riscv64gc-unknown-none-elf, aarch64-unknown-none-softfloat, loongarch64-unknown-none-softfloat
+        targets: x86_64-unknown-none, riscv64gc-unknown-none-elf, aarch64-unknown-none-softfloat, loongarch64-unknown-none-softfloat, armv7a-none-eabi
     - name: Clippy
       run: | 
         make -C examples/hello-kernel ARCH=${{ matrix.arch }} clippy
