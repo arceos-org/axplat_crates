@@ -1,11 +1,31 @@
-use crate::mem::phys_to_virt;
+use crate::mem::mmio_phys_to_virt;
 use axplat::mem::{PhysAddr, pa};
 use kspin::SpinNoIrq;
-use ns16550a::Uart;
+use ns16550a::{
+    Break, DMAMode, Divisor, ParityBit, ParitySelect, StickParity, StopBits, Uart, WordLength,
+};
 
 const UART_BASE: PhysAddr = pa!(crate::config::devices::UART_PADDR);
 
-static UART: SpinNoIrq<Uart> = SpinNoIrq::new(Uart::new(phys_to_virt(UART_BASE).as_usize()));
+static UART: SpinNoIrq<Uart> = SpinNoIrq::new(Uart::new(mmio_phys_to_virt(UART_BASE).as_usize()));
+
+/// Initializes the UART.
+/// Note: QEMU's ns16550a UART is already initialized by firmware, so this
+/// function is typically not needed. It's kept here for reference or for
+/// cases where explicit initialization is required.
+#[allow(dead_code)]
+pub fn init() {
+    UART.lock().init(
+        WordLength::EIGHT,
+        StopBits::ONE,
+        ParityBit::DISABLE,
+        ParitySelect::EVEN,
+        StickParity::DISABLE,
+        Break::DISABLE,
+        DMAMode::MODE0,
+        Divisor::BAUD115200,
+    );
+}
 
 use axplat::console::ConsoleIf;
 
