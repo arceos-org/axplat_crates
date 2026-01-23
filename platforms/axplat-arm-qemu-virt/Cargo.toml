@@ -17,8 +17,8 @@ kspin = "0.1"
 axcpu = "0.2"
 arm_pl011 = "0.1"
 lazy_static = { version = "1.5", features = ["spin_no_std"] }
-page_table_entry = "0.5"
-aarch32-cpu = "0.1"
+page_table_entry = "0.6"
+aarch32-cpu = "0.2"
 log = "0.4"
-axplat = { workspace = true}
-axplat-aarch64-peripherals = { version = "0.3", path = "../axplat-aarch64-peripherals" }
+axplat = { workspace = true }
+axplat-aarch64-peripherals = { workspace = true }

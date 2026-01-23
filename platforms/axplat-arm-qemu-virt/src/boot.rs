@@ -1,7 +1,7 @@
 use crate::config::plat::{BOOT_STACK_SIZE, PHYS_VIRT_OFFSET};
 use aarch32_cpu::asm::{dsb, isb};
 use aarch32_cpu::register::TlbIAll;
-use memory_addr::pa;
+use axplat::mem::{Aligned4K, pa};
 use page_table_entry::{GenericPTE, MappingFlags, arm::A32PTE};
 
 /// Boot page table for ARM32 short-descriptor format.
@@ -11,14 +11,9 @@ use page_table_entry::{GenericPTE, MappingFlags, arm::A32PTE};
 ///
 /// For simplicity during boot, we use a single unified page table for both.
 /// The table has 4096 entries, each covering 1MB (total 4GB address space).
-#[repr(C, align(16384))]
-struct BootPageTable {
-    entries: [u32; 4096],
-}
-
 #[unsafe(no_mangle)]
 #[unsafe(link_section = ".data.boot_page_table")]
-static mut BOOT_PT: BootPageTable = BootPageTable { entries: [0; 4096] };
+static mut BOOT_PT: Aligned4K<[A32PTE; 4096]> = Aligned4K::new([A32PTE::empty(); 4096]);
 
 #[unsafe(no_mangle)]
 #[unsafe(link_section = ".bss.stack")]
@@ -40,6 +35,7 @@ pub unsafe extern "C" fn init_page_tables(pt_ptr: *mut u32) {
     //    Mapping physical RAM (PHYS_MEMORY_BASE = 0x4000_0000) to itself.
     //    This is required so the CPU can keep executing instructions immediately
     //    after turning on the MMU (where PC is still pointing to physical addresses).
+    // Only map 1MB for Kernel Code & Data mainly.
     let entry1 = A32PTE::new_page(
         pa!(0x4000_0000),
         MappingFlags::READ | MappingFlags::WRITE | MappingFlags::EXECUTE,
@@ -54,7 +50,7 @@ pub unsafe extern "C" fn init_page_tables(pt_ptr: *mut u32) {
     // 2. Kernel Linear Map (High 2GB - TTBR1 region):
     //    Map physical RAM (PHYS_MEMORY_BASE) to KERNEL_BASE in high memory.
     //    Virtual Range: KERNEL_BASE_VADDR (0xC000_0000) -> 0xFFFF_FFFF (TTBR1 region)
-    //    Physical Range: PHYS_MEMORY_BASE (0x4000_0000) -> 0x4640_0000
+    //    Physical Range: PHYS_MEMORY_BASE (0x4000_0000) -> 0x7FFF_FFFF
     // Only map 1MB for Kernel Code & Data mainly.
     let start_idx = 0xC000_0000 >> 20;
     let entry = A32PTE::new_page(
@@ -72,40 +68,27 @@ pub unsafe extern "C" fn init_page_tables(pt_ptr: *mut u32) {
 #[unsafe(no_mangle)]
 #[unsafe(link_section = ".text.boot")]
 pub unsafe extern "C" fn init_page_tables_after_mmu() {
-    // Get the virtual address of the page table
-    // BOOT_PT is in the high memory after MMU is enabled
-    let pt_vaddr = core::ptr::addr_of_mut!(BOOT_PT) as *mut u32;
-
-    // Unmap the identity mapping (PHYS_MEMORY_BASE)
     unsafe {
-        pt_vaddr.add(0x4000_0000 >> 20).write_volatile(0);
-    }
+        // Unmap the identity mapping (PHYS_MEMORY_BASE)
+        // Prevent accidental reads by other apps from physical address space.
+        BOOT_PT[0x400] = A32PTE::empty();
 
-    // Map 0xC000_0000 ~ 0xC800_0000 to global allocated memory region
-    let start_idx = 0xC000_0000 >> 20;
-    for i in 1..128 {
-        let entry = A32PTE::new_page(
-            pa!(0x4000_0000 + i * 0x100000),
-            MappingFlags::READ | MappingFlags::WRITE | MappingFlags::EXECUTE,
+        // Map 0xC000_0000 ~ 0xC800_0000 to global allocated memory region
+        let start_idx = 0xC00;
+        for i in 0..128 {
+            BOOT_PT[start_idx + i] = A32PTE::new_page(
+                pa!(0x4000_0000 + i * 0x100000),
+                MappingFlags::READ | MappingFlags::WRITE | MappingFlags::EXECUTE,
+                true, // 1MB section
+            );
+        }
+
+        // Map a device memory region (UART) 0x8900_0000
+        BOOT_PT[0x890] = A32PTE::new_page(
+            pa!(0x0900_0000),
+            MappingFlags::READ | MappingFlags::WRITE | MappingFlags::DEVICE,
             true, // 1MB section
         );
-        unsafe {
-            pt_vaddr
-                .add(start_idx + i)
-                .write_volatile(entry.bits() as u32);
-        }
-    }
-
-    // Map a device memory region (UART)
-    let entry = A32PTE::new_page(
-        pa!(0x0900_0000),
-        MappingFlags::READ | MappingFlags::WRITE | MappingFlags::DEVICE,
-        true, // 1MB section
-    );
-    unsafe {
-        pt_vaddr
-            .add(0x8900_0000 >> 20)
-            .write_volatile(entry.bits() as u32);
     }
 
     // Invalidate entire TLB using aarch32_cpu abstraction

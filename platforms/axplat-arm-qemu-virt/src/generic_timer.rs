@@ -1,51 +1,10 @@
-use core::arch::asm;
+use axcpu::asm::{timer_counter, timer_frequency};
+#[cfg(feature = "irq")]
+use axcpu::asm::{write_timer_comparevalue, write_timer_control};
 
 const NANOS_PER_SEC: u64 = 1_000_000_000;
 
 struct TimeIfImpl;
-
-/// Read the CNTFRQ register (Counter-timer Frequency register)
-#[inline]
-fn timer_frequency() -> u64 {
-    let freq: u32;
-    unsafe {
-        // CNTFRQ: c14, c0, 0
-        asm!("mrc p15, 0, {}, c14, c0, 0", out(reg) freq);
-    }
-    freq as u64
-}
-
-/// Read the CNTVCT register (Counter-timer Virtual Count register)
-#[inline]
-fn timer_counter() -> u64 {
-    let low: u32;
-    let high: u32;
-    unsafe {
-        // CNTVCT: c14
-        asm!("mrrc p15, 1, {}, {}, c14", out(reg) low, out(reg) high);
-    }
-    ((high as u64) << 32) | (low as u64)
-}
-
-/// Write CNTP_CVAL register (Counter-timer Physical Timer CompareValue register)
-#[inline]
-fn write_timer_comparevalue(value: u64) {
-    let low = value as u32;
-    let high = (value >> 32) as u32;
-    unsafe {
-        // CNTP_CVAL: c14, c2
-        asm!("mcrr p15, 2, {}, {}, c14", in(reg) low, in(reg) high);
-    }
-}
-
-/// Write Physical Timer Control register (CNTP_CTL)
-#[inline]
-fn write_timer_control(control: u32) {
-    unsafe {
-        // CNTP_CTL: c14, c2
-        asm!("mcr p15, 0, {}, c14, c2, 1", in(reg) control);
-    }
-}
 
 /// Returns the current clock time in hardware ticks.
 #[impl_plat_interface]
