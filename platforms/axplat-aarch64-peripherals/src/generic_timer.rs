@@ -95,6 +95,7 @@ macro_rules! time_if_impl {
             ///
             /// A timer interrupt will be triggered at the specified monotonic time
             /// deadline (in nanoseconds).
+            #[cfg(feature = "irq")]
             fn set_oneshot_timer(deadline_ns: u64) {
                 $crate::generic_timer::set_oneshot_timer(deadline_ns)
             }
