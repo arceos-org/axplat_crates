@@ -1,0 +1,73 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="axplat"><title>axplat - Rust</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-6b053e98.ttf.woff2,FiraSans-Italic-81dc35de.woff2,FiraSans-Regular-0fe48ade.woff2,FiraSans-MediumItalic-ccf7e434.woff2,FiraSans-Medium-e1aa3f0a.woff2,SourceCodePro-Regular-8badfe75.ttf.woff2,SourceCodePro-Semibold-aa29a496.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2"href="../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../static.files/normalize-9960930a.css"><link rel="stylesheet" href="../static.files/rustdoc-0bd2dfd4.css"><meta name="rustdoc-vars" data-root-path="../" data-static-root-path="../static.files/" data-current-crate="axplat" data-themes="" data-resource-suffix="" data-rustdoc-version="1.95.0-nightly (de6d33c03 2026-01-28)" data-channel="nightly" data-search-js="search-86d08462.js" data-stringdex-js="stringdex-b897f86f.js" data-settings-js="settings-170eb4bf.js" ><script src="../static.files/storage-f9617a14.js"></script><script defer src="../crates.js"></script><script defer src="../static.files/main-12f88f4f.js"></script><noscript><link rel="stylesheet" href="../static.files/noscript-ffcac47a.css"></noscript><link rel="alternate icon" type="image/png" href="../static.files/favicon-32x32-eab170b8.png"><link rel="icon" type="image/svg+xml" href="../static.files/favicon-044be391.svg"></head><body class="rustdoc mod crate"><a class="skip-main-content" href="#main-content">Skip to main content</a><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><rustdoc-topbar><h2><a href="#">Crate axplat</a></h2></rustdoc-topbar><nav class="sidebar"><div class="sidebar-crate"><h2><a href="../axplat/index.html">axplat</a><span class="version">0.3.0</span></h2></div><div class="sidebar-elems"><ul class="block"><li><a id="all-types" href="all.html">All Items</a></li></ul><section id="rustdoc-toc"><h3><a href="#">Sections</a></h3><ul class="block top-toc"><li><a href="#axplat" title="axplat">axplat</a><ul><li><a href="#how-to-use-in-your-kernel-project" title="How to use in your kernel project">How to use in your kernel project</a></li><li><a href="#how-to-write-a-platform-package" title="How to write a platform package">How to write a platform package</a></li></ul></li></ul><h3><a href="#modules">Crate Items</a></h3><ul class="block"><li><a href="#modules" title="Modules">Modules</a></li><li><a href="#macros" title="Macros">Macros</a></li><li><a href="#functions" title="Functions">Functions</a></li><li><a href="#attributes" title="Attribute Macros">Attribute Macros</a></li></ul></section><div id="rustdoc-modnav"></div></div></nav><div class="sidebar-resizer" title="Drag to resize sidebar"></div><main><div class="width-limiter"><section id="main-content" class="content" tabindex="-1"><div class="main-heading"><h1>Crate <span>axplat</span>&nbsp;<button id="copy-path" title="Copy item path to clipboard">Copy item path</button></h1><rustdoc-toolbar></rustdoc-toolbar><span class="sub-heading"><a class="src" href="../src/axplat/lib.rs.html#1-77">Source</a> </span></div><details class="toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><h2 id="axplat"><a class="doc-anchor" href="#axplat">§</a>axplat</h2>
+<p><a href="https://crates.io/crates/axplat"><img src="https://img.shields.io/crates/v/axplat" alt="Crates.io" /></a>
+<a href="https://docs.rs/axplat"><img src="https://docs.rs/axplat/badge.svg" alt="Docs.rs" /></a>
+<a href="https://github.com/arceos-org/axplat_crates/actions/workflows/ci.yml"><img src="https://github.com/arceos-org/axplat_crates/actions/workflows/ci.yml/badge.svg?branch=main" alt="CI" /></a></p>
+<p>This crate provides a unified abstraction layer for diverse hardware platforms. It allows kernel developers to bootstrap custom kernels across various platforms and interact with essential peripherals using hardware-agnostic APIs.</p>
+<p>Interfaces can be divided into the following categories:</p>
+<div><table><thead><tr><th>Category</th><th>Trait</th><th>Description</th></tr></thead><tbody>
+<tr><td>init</td><td><code>InitIf</code></td><td>Platform initialization</td></tr>
+<tr><td>console</td><td><code>ConsoleIf</code></td><td>Console input and output</td></tr>
+<tr><td>power</td><td><code>PowerIf</code></td><td>Power management</td></tr>
+<tr><td>mem</td><td><code>MemIf</code></td><td>Physical memory information</td></tr>
+<tr><td>time</td><td><code>TimeIf</code></td><td>Time-related operations</td></tr>
+<tr><td>irq</td><td><code>IrqIf</code></td><td>Interrupt request handling</td></tr>
+</tbody></table>
+</div>
+<p>Each category of interfaces provides a trait (e.g., <code>ConsoleIf</code>) for a platform package to implement. You can use the corresponding platform-related functions in your project directly from the <a href="https://crates.io/crates/axplat">axplat</a> crate without importing the specific platform package.</p>
+<h3 id="how-to-use-in-your-kernel-project"><a class="doc-anchor" href="#how-to-use-in-your-kernel-project">§</a>How to use in your kernel project</h3>
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="comment">// Link you kernel with the specific platform package in some crate.
+// extern crate your_platform_crate;
+
+// Write your kernel code (can be in another crate).
+</span><span class="attr">#[axplat::main]
+</span><span class="kw">fn </span>kernel_main(cpu_id: usize, arg: usize) -&gt; ! {
+    <span class="comment">// Initialize trap, console, time.
+    </span>axplat::init::init_early(cpu_id, arg);
+    <span class="comment">// Initialize platform peripherals (not used in this example).
+    </span>axplat::init::init_later(cpu_id, arg);
+
+    <span class="comment">// Write your kernel code here.
+    </span><span class="macro">axplat::console_println!</span>(<span class="string">"Hello, ArceOS!"</span>);
+
+    <span class="comment">// Power off the system.
+    </span>axplat::power::system_off();
+}</code></pre></div>
+<p>More APIs can be found in the <a href="https://docs.rs/axplat/latest/axplat/">documentation</a>. More example kernels can be found in the <a href="https://github.com/arceos-org/axplat_crates/tree/main/examples">examples</a> directory.</p>
+<h3 id="how-to-write-a-platform-package"><a class="doc-anchor" href="#how-to-write-a-platform-package">§</a>How to write a platform package</h3><h5 id="1-implement-each-interface-trait"><a class="doc-anchor" href="#1-implement-each-interface-trait">§</a>1. Implement each interface trait</h5>
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">use </span>axplat::impl_plat_interface;
+
+<span class="doccomment">/// Implementation of Platform initialization.
+</span><span class="kw">struct </span>InitIfImpl;
+
+<span class="attr">#[impl_plat_interface]
+</span><span class="kw">impl </span>axplat::init::InitIf <span class="kw">for </span>InitIfImpl {
+    <span class="kw">fn </span>init_early(cpu_id: usize, arg: usize) { <span class="comment">/* ... */ </span>}
+    <span class="kw">fn </span>init_later(cpu_id: usize, arg: usize) { <span class="comment">/* ... */ </span>}
+    <span class="kw">fn </span>init_early_secondary(cpu_id: usize) { <span class="comment">/* ... */ </span>}
+    <span class="kw">fn </span>init_later_secondary(cpu_id: usize) { <span class="comment">/* ... */ </span>}
+}
+
+<span class="doccomment">/// Implementation of Console input and output.
+</span><span class="kw">struct </span>ConsoleIfImpl;
+
+<span class="attr">#[impl_plat_interface]
+</span><span class="kw">impl </span>axplat::console::ConsoleIf <span class="kw">for </span>ConsoleIfImpl {
+    <span class="kw">fn </span>write_bytes(bytes: <span class="kw-2">&amp;</span>[u8]) { <span class="comment">/* ... */ </span>}
+    <span class="kw">fn </span>read_bytes(bytes: <span class="kw-2">&amp;mut </span>[u8]) -&gt; usize { <span class="comment">/* ... */ </span><span class="number">0 </span>}
+}
+
+<span class="comment">// Implementation of other traits...</span></code></pre></div><h5 id="2-implement-platform-bootstrapping-code-and-call-the-entry-function-of-axplat"><a class="doc-anchor" href="#2-implement-platform-bootstrapping-code-and-call-the-entry-function-of-axplat">§</a>2. Implement platform bootstrapping code and call the entry function of axplat</h5>
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="attr">#[<span class="kw">unsafe</span>(no_mangle)]
+</span><span class="kw">unsafe extern </span><span class="string">"C" </span><span class="kw">fn </span>__start() -&gt; ! {
+    <span class="comment">// platform bootstrapping code here.
+    /* ... */
+
+    // Call the entry function of axplat.
+    </span>axplat::call_main(<span class="number">0</span>, <span class="number">0xdeadbeef</span>); <span class="comment">// cpu_id = 0, arg = 0xdeadbeef
+</span>}</code></pre></div>
+<p>We also provide a cargo plugin called <a href="https://github.com/arceos-org/axplat_crates/tree/main/cargo-axplat">cargo-axplat</a> for creating a new platform package and adding it into your project.</p>
+<p>Some examples of platform packages for various platforms are listed in the <a href="https://github.com/arceos-org/axplat_crates/tree/main/platforms">platforms</a> directory.</p>
+</div></details><h2 id="modules" class="section-header">Modules<a href="#modules" class="anchor">§</a></h2><dl class="item-table"><dt><a class="mod" href="console/index.html" title="mod axplat::console">console</a></dt><dd>Console input and output.</dd><dt><a class="mod" href="init/index.html" title="mod axplat::init">init</a></dt><dd>Platform initialization.</dd><dt><a class="mod" href="irq/index.html" title="mod axplat::irq">irq</a><wbr><span class="stab portability" title="Available on crate feature `irq` only"><code>irq</code></span></dt><dd>Interrupt request (IRQ) handling.</dd><dt><a class="mod" href="mem/index.html" title="mod axplat::mem">mem</a></dt><dd>Physical memory information.</dd><dt><a class="mod" href="power/index.html" title="mod axplat::power">power</a></dt><dd>Power management.</dd><dt><a class="mod" href="time/index.html" title="mod axplat::time">time</a></dt><dd>Time-related operations.</dd></dl><h2 id="macros" class="section-header">Macros<a href="#macros" class="anchor">§</a></h2><dl class="item-table"><dt><a class="macro" href="macro.assert_str_eq.html" title="macro axplat::assert_str_eq">assert_<wbr>str_<wbr>eq</a></dt><dd>Checks that two strings are equal. If they are not equal, it will cause a compile-time
+error. And the message will be printed if it is provided.</dd><dt><a class="macro" href="macro.console_print.html" title="macro axplat::console_print">console_<wbr>print</a></dt><dd>Simple console print operation.</dd><dt><a class="macro" href="macro.console_println.html" title="macro axplat::console_println">console_<wbr>println</a></dt><dd>Simple console print operation, with a newline.</dd></dl><h2 id="functions" class="section-header">Functions<a href="#functions" class="anchor">§</a></h2><dl class="item-table"><dt><a class="fn" href="fn.call_main.html" title="fn axplat::call_main">call_<wbr>main</a></dt><dd>Call the function decorated by <a href="attr.main.html" title="attr axplat::main"><code>axplat::main</code></a> for the primary core.</dd><dt><a class="fn" href="fn.call_secondary_main.html" title="fn axplat::call_secondary_main">call_<wbr>secondary_<wbr>main</a><wbr><span class="stab portability" title="Available on crate feature `smp` only"><code>smp</code></span></dt><dd>Call the function decorated by <a href="attr.secondary_main.html" title="attr axplat::secondary_main"><code>axplat::secondary_main</code></a> for secondary cores.</dd></dl><h2 id="attributes" class="section-header">Attribute Macros<a href="#attributes" class="anchor">§</a></h2><dl class="item-table"><dt><a class="attr" href="attr.impl_plat_interface.html" title="attr axplat::impl_plat_interface">impl_<wbr>plat_<wbr>interface</a></dt><dd>Implement the interface for a struct.</dd><dt><a class="attr" href="attr.main.html" title="attr axplat::main">main</a></dt><dd>Marks a function to be called on the primary core after the platform
+initialization.</dd><dt><a class="attr" href="attr.secondary_main.html" title="attr axplat::secondary_main">secondary_<wbr>main</a><wbr><span class="stab portability" title="Available on crate feature `smp` only"><code>smp</code></span></dt><dd>Marks a function to be called on the secondary cores after the platform
+initialization.</dd></dl></section></div></main></body></html>

@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["cpu_boot","cpu_num","system_off"],"trait":["PowerIf"]};

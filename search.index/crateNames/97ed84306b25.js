@@ -1,0 +1,1 @@
+rd_("faxplatAjaxplat_aarch64_peripheralsmaxplat_macros")

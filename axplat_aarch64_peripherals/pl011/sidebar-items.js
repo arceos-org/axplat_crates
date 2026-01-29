@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["getchar","init_early","irq_handler","putchar","read_bytes","write_bytes"]};

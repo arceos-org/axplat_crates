@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["IpiTarget"],"fn":["handle","register","send_ipi","set_enable","unregister"],"struct":["HandlerTable"],"trait":["IrqIf"],"type":["IrqHandler"]};
