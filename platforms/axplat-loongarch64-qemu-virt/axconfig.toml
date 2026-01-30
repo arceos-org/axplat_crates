@@ -20,15 +20,19 @@ phys-memory-size = 0x800_0000         # uint
 kernel-base-paddr = 0x8000_0000       # uint
 
 # Base virtual address of the kernel image.
-kernel-base-vaddr = "0xffff_0000_8000_0000"     # uint
+# Note: LoongArch64 uses DMW (Direct Mapping Window) for address translation:
+#   DMW0: 0x8000_xxxx -> physical (uncached, for device MMIO)
+#   DMW1: 0x9000_xxxx -> physical (cached, for kernel memory)
+# The kernel must be mapped via DMW1 (cached) range.
+kernel-base-vaddr = "0x9000_0000_8000_0000"     # uint
 # Linear mapping offset, for quick conversions between physical and virtual
-# addresses.
-phys-virt-offset = "0xffff_0000_0000_0000"      # uint
+# addresses. Uses DMW1 (cached) mapping.
+phys-virt-offset = "0x9000_0000_0000_0000"      # uint
 # Offset of bus address and phys address. some boards, the bus address is
 # different from the physical address.
 phys-bus-offset = 0                             # uint
 # Kernel address space base.
-kernel-aspace-base = "0xffff_0000_0000_0000"    # uint
+kernel-aspace-base = "0x9000_0000_0000_0000"    # uint
 # Kernel address space size.
 kernel-aspace-size = "0x0000_ffff_ffff_f000"    # uint
 # Stack size on bootstrapping. (256K)
