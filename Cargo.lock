@@ -267,7 +267,7 @@ dependencies = [
 
 [[package]]
 name = "axplat-riscv64-qemu-virt"
-version = "0.3.0"
+version = "0.3.0-preview.2"
 dependencies = [
  "axconfig-macros",
  "axcpu",
