@@ -1,3 +1,5 @@
+//! CPU-local data structures and accessors.
+
 #[percpu::def_percpu]
 static CPU_ID: usize = 0;
 
