@@ -134,9 +134,9 @@ dependencies = [
 
 [[package]]
 name = "axcpu"
-version = "0.3.0-preview.2"
+version = "0.3.0-preview.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7ae799db1af6ed54d666c3a0f1ea5aa1ab01ff66dbda83f10c5462deb121cba4"
+checksum = "627bdaa84f4a3c10e4e3858e7e671463d4dbeac6867643340a06d56d8ce24d24"
 dependencies = [
  "aarch64-cpu",
  "axbacktrace",
@@ -158,7 +158,7 @@ dependencies = [
 
 [[package]]
 name = "axplat"
-version = "0.3.0-preview.2"
+version = "0.3.1-pre.1"
 dependencies = [
  "axplat-macros",
  "bitflags 2.9.2",
@@ -172,7 +172,7 @@ dependencies = [
 
 [[package]]
 name = "axplat-aarch64-bsta1000b"
-version = "0.3.0-preview.2"
+version = "0.3.1-pre.1"
 dependencies = [
  "axconfig-macros",
  "axcpu",
@@ -186,7 +186,7 @@ dependencies = [
 
 [[package]]
 name = "axplat-aarch64-peripherals"
-version = "0.3.0-preview.2"
+version = "0.3.1-pre.1"
 dependencies = [
  "aarch64-cpu",
  "arm-gic-driver",
@@ -204,7 +204,7 @@ dependencies = [
 
 [[package]]
 name = "axplat-aarch64-phytium-pi"
-version = "0.3.0-preview.2"
+version = "0.3.1-pre.1"
 dependencies = [
  "axconfig-macros",
  "axcpu",
@@ -216,7 +216,7 @@ dependencies = [
 
 [[package]]
 name = "axplat-aarch64-qemu-virt"
-version = "0.3.0-preview.2"
+version = "0.3.1-pre.1"
 dependencies = [
  "axconfig-macros",
  "axcpu",
@@ -228,7 +228,7 @@ dependencies = [
 
 [[package]]
 name = "axplat-aarch64-raspi"
-version = "0.3.0-preview.2"
+version = "0.3.1-pre.1"
 dependencies = [
  "aarch64-cpu",
  "axconfig-macros",
@@ -241,7 +241,7 @@ dependencies = [
 
 [[package]]
 name = "axplat-loongarch64-qemu-virt"
-version = "0.3.0-preview.2"
+version = "0.3.1-pre.1"
 dependencies = [
  "axconfig-macros",
  "axcpu",
@@ -267,7 +267,7 @@ dependencies = [
 
 [[package]]
 name = "axplat-riscv64-qemu-virt"
-version = "0.3.0-preview.2"
+version = "0.3.1-pre.1"
 dependencies = [
  "axconfig-macros",
  "axcpu",
@@ -284,7 +284,7 @@ dependencies = [
 
 [[package]]
 name = "axplat-x86-pc"
-version = "0.3.0-preview.2"
+version = "0.3.1-pre.1"
 dependencies = [
  "axconfig-macros",
  "axcpu",
