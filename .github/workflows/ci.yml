@@ -44,7 +44,7 @@ jobs:
       run: cargo build -p cargo-axplat
     - name: Create and test new axplat project from template
       run: |
-        cargo run -p cargo-axplat -- axplat new /tmp/axplat-test
+        cargo run -p cargo-axplat -- axplat new /tmp/axplat-test --axplat-path "${{ github.workspace }}/axplat"
         cd /tmp/axplat-test
         cargo build & cargo clippy
 
