@@ -22,7 +22,7 @@ pub fn this_cpu_is_bsp() -> bool {
 /// Initializes CPU-local data structures for the primary core.
 ///
 /// This function should be called as early as possible, as other
-/// initializations may acess the CPU-local data.
+/// initializations may access the CPU-local data.
 pub fn init_primary(cpu_id: usize) {
     percpu::init();
     percpu::init_percpu_reg(cpu_id);
@@ -35,7 +35,7 @@ pub fn init_primary(cpu_id: usize) {
 /// Initializes CPU-local data structures for secondary cores.
 ///
 /// This function should be called as early as possible, as other
-/// initializations may acess the CPU-local data.
+/// initializations may access the CPU-local data.
 #[cfg(feature = "smp")]
 pub fn init_secondary(cpu_id: usize) {
     percpu::init_percpu_reg(cpu_id);
