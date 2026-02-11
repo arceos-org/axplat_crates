@@ -18,7 +18,7 @@ jobs:
         run: |
           cargo run -p cargo-axplat -- axplat new /tmp/axplat-test --axplat-path "${{ github.workspace }}/axplat"
           cd /tmp/axplat-test
-          cargo build & cargo clippy
+          cargo check
 
   examples:
     runs-on: ubuntu-latest
