@@ -1,8 +1,8 @@
 use crate::config::plat::{BOOT_STACK_SIZE, PHYS_VIRT_OFFSET};
 use aarch32_cpu::asm::{dsb, isb};
 use aarch32_cpu::register::TlbIAll;
-use axplat::mem::{Aligned4K, pa};
-use page_table_entry::{GenericPTE, MappingFlags, arm::A32PTE};
+use axplat::mem::{pa, Aligned4K};
+use page_table_entry::{arm::A32PTE, GenericPTE, MappingFlags};
 
 /// Boot page table for ARM32 short-descriptor format.
 /// With TTBCR.N=1:
@@ -100,6 +100,11 @@ pub unsafe extern "C" fn init_page_tables_after_mmu() {
     isb();
 }
 
+unsafe fn enable_fp() {
+    #[cfg(feature = "fp-simd")]
+    axcpu::asm::enable_fp();
+}
+
 #[unsafe(naked)]
 #[unsafe(no_mangle)]
 #[allow(named_asm_labels)]
@@ -122,12 +127,21 @@ pub unsafe extern "C" fn _start() -> ! {
         add sp, sp, r4
         sub sp, sp, r3
 
+        // Enable FPU early
+        bl {enable_fp}
+
+        // Reload r3 as it might be clobbered by function calls
+        ldr r3, ={PHYS_VIRT_OFFSET}
+
         // Get Physical Address of BOOT_PT
         ldr r0, ={BOOT_PT}
         sub r0, r0, r3
 
         // Call Rust function to setup page tables
         bl {init_page_tables}
+
+        // Reload r3 as it might be clobbered by function calls
+        ldr r3, ={PHYS_VIRT_OFFSET}
 
         // Call Rust function to initialize and enable MMU
         ldr r0, ={BOOT_PT}
@@ -159,6 +173,7 @@ pub unsafe extern "C" fn _start() -> ! {
         init_page_tables = sym init_page_tables,
         init_mmu = sym axcpu::init::init_mmu,
         init_page_tables_after_mmu = sym init_page_tables_after_mmu,
+        enable_fp = sym enable_fp,
     )
 }
 
@@ -176,6 +191,9 @@ pub unsafe extern "C" fn _start_secondary() -> ! {
 
         // Setup physical stack
         mov sp, r0
+
+        // Enable FPU
+        bl {enable_fp}
 
         // Calculate PA of BOOT_PT
         ldr r3, ={PHYS_VIRT_OFFSET}
@@ -203,5 +221,6 @@ pub unsafe extern "C" fn _start_secondary() -> ! {
         BOOT_PT = sym BOOT_PT,
         init_mmu = sym axcpu::init::init_mmu,
         entry = sym axplat::call_secondary_main,
+        enable_fp = sym enable_fp,
     )
 }
