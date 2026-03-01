@@ -10,9 +10,13 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       - uses: dtolnay/rust-toolchain@nightly
+        with:
+          targets: x86_64-unknown-linux-gnu, aarch64-unknown-none
 
       - name: Build docs
-        run: cargo doc --all-features --no-deps -p axplat -p axplat-macros -p axplat-aarch64-peripherals
+        run: |
+          cargo doc --all-features --no-deps -p axplat -p axplat-macros
+          cargo doc --all-features --no-deps -p axplat-arm-peripherals --target aarch64-unknown-none
 
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v4
