@@ -202,27 +202,11 @@ dependencies = [
  "axconfig-macros",
  "axcpu",
  "axplat",
- "axplat-aarch64-peripherals",
+ "axplat-arm-peripherals",
  "dw_apb_uart",
  "kspin",
  "log",
  "page_table_entry",
-]
-
-[[package]]
-name = "axplat-aarch64-peripherals"
-version = "0.3.0"
-dependencies = [
- "aarch64-cpu",
- "arm-gic-driver",
- "arm_pl011",
- "arm_pl031",
- "axcpu",
- "axplat",
- "int_ratio",
- "kspin",
- "lazyinit",
- "log",
 ]
 
 [[package]]
@@ -232,7 +216,7 @@ dependencies = [
  "axconfig-macros",
  "axcpu",
  "axplat",
- "axplat-aarch64-peripherals",
+ "axplat-arm-peripherals",
  "log",
  "page_table_entry",
 ]
@@ -244,7 +228,7 @@ dependencies = [
  "axconfig-macros",
  "axcpu",
  "axplat",
- "axplat-aarch64-peripherals",
+ "axplat-arm-peripherals",
  "log",
  "page_table_entry",
 ]
@@ -257,9 +241,24 @@ dependencies = [
  "axconfig-macros",
  "axcpu",
  "axplat",
- "axplat-aarch64-peripherals",
+ "axplat-arm-peripherals",
  "log",
  "page_table_entry",
+]
+
+[[package]]
+name = "axplat-arm-peripherals"
+version = "0.3.0"
+dependencies = [
+ "arm-gic-driver",
+ "arm_pl011",
+ "arm_pl031",
+ "axcpu",
+ "axplat",
+ "int_ratio",
+ "kspin",
+ "lazyinit",
+ "log",
 ]
 
 [[package]]
