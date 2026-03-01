@@ -7,7 +7,7 @@ members = [
     "cargo-axplat",
 
     "platforms/axplat-x86-pc",
-    "platforms/axplat-aarch64-peripherals",
+    "platforms/axplat-arm-peripherals",
     "platforms/axplat-aarch64-qemu-virt",
     "platforms/axplat-aarch64-raspi",
     "platforms/axplat-aarch64-bsta1000b",
@@ -38,4 +38,7 @@ repository = "https://github.com/arceos-org/axplat_crates"
 axcpu = "0.2"
 axplat = { version = "0.3.0", path = "./axplat" }
 axplat-macros = { version = "0.1.0", path = "./axplat-macros" }
-axplat-aarch64-peripherals = { version = "0.3.0", path = "platforms/axplat-aarch64-peripherals" }
+axplat-arm-peripherals = { version = "0.3.0", path = "platforms/axplat-arm-peripherals" }
+
+[patch.crates-io]
+axcpu = { git = "https://github.com/arceos-org/axcpu.git", branch = "arm-generic-timer" }

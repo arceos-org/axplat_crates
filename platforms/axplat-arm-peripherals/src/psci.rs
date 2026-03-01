@@ -2,6 +2,7 @@
 
 #![allow(dead_code)]
 
+use core::arch::asm;
 use core::sync::atomic::{AtomicBool, Ordering};
 
 const PSCI_0_2_FN_BASE: u32 = 0x84000000;
@@ -57,7 +58,7 @@ fn arm_smccc_smc(func: u32, arg0: usize, arg1: usize, arg2: usize) -> usize {
     let mut ret;
     #[cfg(target_arch = "aarch64")]
     unsafe {
-        core::arch::asm!(
+        asm!(
             "smc #0",
             inlateout("x0") func as usize => ret,
             in("x1") arg0,
@@ -67,7 +68,7 @@ fn arm_smccc_smc(func: u32, arg0: usize, arg1: usize, arg2: usize) -> usize {
     }
     #[cfg(target_arch = "arm")]
     unsafe {
-        core::arch::asm!(
+        asm!(
             ".arch_extension sec",
             "smc #0",
             inlateout("r0") func => ret,
@@ -84,7 +85,7 @@ fn psci_hvc_call(func: u32, arg0: usize, arg1: usize, arg2: usize) -> usize {
     let ret;
     #[cfg(target_arch = "aarch64")]
     unsafe {
-        core::arch::asm!(
+        asm!(
             "hvc #0",
             inlateout("x0") func as usize => ret,
             in("x1") arg0,
@@ -94,7 +95,7 @@ fn psci_hvc_call(func: u32, arg0: usize, arg1: usize, arg2: usize) -> usize {
     }
     #[cfg(target_arch = "arm")]
     unsafe {
-        core::arch::asm!(
+        asm!(
             ".arch_extension virt",
             "hvc #0",
             inlateout("r0") func => ret,
@@ -150,7 +151,12 @@ pub fn system_off() -> ! {
 /// `arg` will be passed to the `X0` register of the secondary CPU.
 pub fn cpu_on(target_cpu: usize, entry_point: usize, arg: usize) {
     info!("Starting CPU {:x} ON ...", target_cpu);
-    let res = psci_call(PSCI_0_2_FN64_CPU_ON, target_cpu, entry_point, arg);
+    let fn_num = if cfg!(target_pointer_width = "64") {
+        PSCI_0_2_FN64_CPU_ON
+    } else {
+        PSCI_0_2_FN_CPU_ON
+    };
+    let res = psci_call(fn_num, target_cpu, entry_point, arg);
     if let Err(e) = res {
         error!("failed to boot CPU {:x} ({:?})", target_cpu, e);
     }
