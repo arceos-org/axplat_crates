@@ -26,7 +26,6 @@ SECTIONS
         *(.got .got.*)
     }
 
-
     . = ALIGN(4K);
     _percpu_start = .;
     _percpu_end = _percpu_start + SIZEOF(.percpu);
