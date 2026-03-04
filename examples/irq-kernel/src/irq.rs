@@ -33,6 +33,7 @@ pub fn init_irq() {
 
         NEXT_DEADLINE.store(deadline + PERIODIC_INTERVAL_NANOS, Release);
         axplat::time::set_oneshot_timer(deadline);
+        axplat::console_println!("Timer IRQ handler registered.");
     }
 
     // Register the timer IRQ handler.
