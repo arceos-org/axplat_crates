@@ -1,6 +1,6 @@
-use axcpu::asm::{timer_counter, timer_frequency};
+use axcpu::asm::{phys_timer_counter, timer_frequency};
 #[cfg(feature = "irq")]
-use axcpu::asm::{write_timer_comparevalue, write_timer_control};
+use axcpu::asm::{phys_timer_enable, phys_timer_set_countdown};
 
 const NANOS_PER_SEC: u64 = 1_000_000_000;
 
@@ -10,18 +10,18 @@ struct TimeIfImpl;
 #[impl_plat_interface]
 impl axplat::time::TimeIf for TimeIfImpl {
     fn current_ticks() -> u64 {
-        timer_counter()
+        phys_timer_counter()
     }
 
     /// Converts hardware ticks to nanoseconds.
     fn ticks_to_nanos(ticks: u64) -> u64 {
-        let freq = timer_frequency();
+        let freq = timer_frequency() as u64;
         ticks * NANOS_PER_SEC / freq
     }
 
     /// Converts nanoseconds to hardware ticks.
     fn nanos_to_ticks(nanos: u64) -> u64 {
-        let freq = timer_frequency();
+        let freq = timer_frequency() as u64;
         nanos * freq / NANOS_PER_SEC
     }
 
@@ -37,19 +37,18 @@ impl axplat::time::TimeIf for TimeIfImpl {
         let current_ns = Self::ticks_to_nanos(Self::current_ticks());
         if deadline_ns > current_ns {
             let ticks = Self::nanos_to_ticks(deadline_ns - current_ns);
-            write_timer_comparevalue(Self::current_ticks() + ticks);
-            write_timer_control(1); // Enable timer
+            phys_timer_set_countdown(ticks as u32);
         } else {
             // Deadline has passed, trigger immediately
-            write_timer_comparevalue(Self::current_ticks());
-            write_timer_control(1); // Enable timer
+            phys_timer_set_countdown(0);
         }
+        phys_timer_enable(true);
     }
 }
 
 /// Enable timer interrupts
 #[cfg(feature = "irq")]
 pub fn enable_irqs(_irq_num: usize) {
-    write_timer_comparevalue(timer_counter());
-    write_timer_control(1);
+    phys_timer_set_countdown(0);
+    phys_timer_enable(true);
 }
