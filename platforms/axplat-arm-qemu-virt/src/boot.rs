@@ -3,34 +3,10 @@ use core::{
     ops::{Deref, DerefMut},
 };
 
+use axplat::mem::Aligned4K;
 use memory_addr::{PhysAddr, pa};
 use page_table_entry::arm::A32PTE;
 use page_table_entry::{GenericPTE, MappingFlags};
-
-/// A wrapper type for aligning a value to 4K bytes.
-#[repr(align(4096))]
-pub struct Aligned4K<T: Sized>(T);
-
-impl<T: Sized> Aligned4K<T> {
-    /// Creates a new [`Aligned4K`] instance with the given value.
-    pub const fn new(value: T) -> Self {
-        Self(value)
-    }
-}
-
-impl<T> Deref for Aligned4K<T> {
-    type Target = T;
-
-    fn deref(&self) -> &Self::Target {
-        &self.0
-    }
-}
-
-impl<T> DerefMut for Aligned4K<T> {
-    fn deref_mut(&mut self) -> &mut Self::Target {
-        &mut self.0
-    }
-}
 
 #[unsafe(no_mangle)]
 #[unsafe(link_section = ".data.boot_page_table")]
@@ -56,63 +32,13 @@ pub unsafe extern "C" fn _start() -> ! {
     .word   0                       /* 0x2C: Image end address */
     .word   0x04030201              /* 0x30: Endianness flag */
     ",
-    entry = sym _start_continue,
+    entry = sym _start_primary,
     );
 }
 
 #[unsafe(naked)]
 #[unsafe(no_mangle)]
 #[allow(named_asm_labels)]
-pub unsafe extern "C" fn _start_continue() -> ! {
-    naked_asm!(
-        "
-    /* Print _start address in hex */
-    ldr r1, =0x09000000     // UART0_PHYS_BASE
-    mov r2, #'L'
-    strb r2, [r1]
-    mov r2, #'O'
-    strb r2, [r1]
-    mov r2, #'A'
-    strb r2, [r1]
-    mov r2, #'D'
-    strb r2, [r1]
-    mov r2, #':'
-    strb r2, [r1]
-    mov r2, #' '
-    strb r2, [r1]    
-
-    mov r2, #'0'
-    strb r2, [r1]
-    mov r2, #'x'
-    strb r2, [r1]
-
-    ldr r4, =_start
-    mov r3, #28
-2:
-    lsr r2, r4, r3
-    and r2, r2, #0xf
-    cmp r2, #9
-    addle r2, r2, #'0'
-    addgt r2, r2, #87
-    strb r2, [r1]
-    subs r3, r3, #4
-    bge 2b
-
-    mov r2, #'\n'
-    strb r2, [r1]
-    /* End Print */
-    
-    b {start_primary}
-
-1:
-    b 1b
-    ",
-    start_primary = sym _start_primary,
-    );
-}
-
-/// The earliest entry point for the primary CPU.
-#[unsafe(naked)]
 unsafe extern "C" fn _start_primary() -> ! {
     // X0 = dtb
     core::arch::naked_asm!("
@@ -154,20 +80,20 @@ unsafe extern "C" fn _start_primary() -> ! {
 
     bl {init_page_tables_after_mmu}
 
-    // Pass DTB and CPU ID to rust_main, then tail-jump to it.
-    mov r0, r10
-    mov r1, r11
+    // Pass CPU ID and DTB to rust_main, then tail-jump to it.
+    mov r0, r11
+    mov r1, r10
     b {rust_main}
 
 1:
     b 1b",
-        BOOT_PT = sym BOOT_PT,
-        BOOT_STACK = sym BOOT_STACK,
-        PHYS_VIRT_OFFSET = const crate::config::plat::PHYS_VIRT_OFFSET,
-        init_page_tables_before_mmu = sym init_page_tables_before_mmu,
-        init_page_tables_after_mmu = sym init_page_tables_after_mmu,
-        rust_main = sym axplat::call_main,
-        init_mmu = sym axcpu::init::init_mmu,
+    BOOT_PT = sym BOOT_PT,
+    BOOT_STACK = sym BOOT_STACK,
+    PHYS_VIRT_OFFSET = const crate::config::plat::PHYS_VIRT_OFFSET,
+    init_page_tables_before_mmu = sym init_page_tables_before_mmu,
+    init_page_tables_after_mmu = sym init_page_tables_after_mmu,
+    rust_main = sym axplat::call_main,
+    init_mmu = sym axcpu::init::init_mmu,
     );
 }
 
@@ -191,82 +117,20 @@ unsafe extern "C" fn init_page_tables_before_mmu(boot_pt_runtime: usize) {
         core::ptr::write_volatile(boot_pt_ptr.add(0xC00), section_entry);
         core::ptr::write_volatile(boot_pt_ptr.add(0x890), uart_section_entry);
     }
-
-    let low_entry = unsafe { core::ptr::read_volatile(boot_pt_ptr.add(0x400)) };
-    let high_entry = unsafe { core::ptr::read_volatile(boot_pt_ptr.add(0xC00)) };
-    let uart_high_entry = unsafe { core::ptr::read_volatile(boot_pt_ptr.add(0x890)) };
-    let expected_raw = section_entry.bits();
-    let uart_expected_raw = uart_section_entry.bits();
-    let low_raw = low_entry.bits();
-    let high_raw = high_entry.bits();
-    let uart_high_raw = uart_high_entry.bits();
-
-    uart_early_putc(b'P');
-    uart_early_putc(b'T');
-    uart_early_putc(b' ');
-    uart_early_putc(b'O');
-    uart_early_putc(b'K');
-    uart_early_putc(b'?');
-    uart_early_putc(b' ');
-
-    let low_ok = low_raw == expected_raw;
-    let high_ok = high_raw == expected_raw;
-    let uart_ok = uart_high_raw == uart_expected_raw;
-
-    if low_ok && high_ok && uart_ok {
-        uart_early_putc(b'Y');
-    } else {
-        uart_early_putc(b'N');
-    }
-    uart_early_putc(b'\n');
-
-    uart_early_putc(b'L');
-    uart_early_putc(b'1');
-    uart_early_putc(b'[');
-    uart_early_putc(b'4');
-    uart_early_putc(b'0');
-    uart_early_putc(b'0');
-    uart_early_putc(b']');
-    uart_early_putc(b':');
-    uart_early_putc(b' ');
-    uart_early_putc(b'0');
-    uart_early_putc(b'x');
-    print_early_hex32(low_raw);
-    uart_early_putc(b'\n');
-
-    uart_early_putc(b'L');
-    uart_early_putc(b'1');
-    uart_early_putc(b'[');
-    uart_early_putc(b'C');
-    uart_early_putc(b'0');
-    uart_early_putc(b'0');
-    uart_early_putc(b']');
-    uart_early_putc(b':');
-    uart_early_putc(b' ');
-    uart_early_putc(b'0');
-    uart_early_putc(b'x');
-    print_early_hex32(high_raw);
-    uart_early_putc(b'\n');
-
-    uart_early_putc(b'L');
-    uart_early_putc(b'1');
-    uart_early_putc(b'[');
-    uart_early_putc(b'8');
-    uart_early_putc(b'9');
-    uart_early_putc(b'0');
-    uart_early_putc(b']');
-    uart_early_putc(b':');
-    uart_early_putc(b' ');
-    uart_early_putc(b'0');
-    uart_early_putc(b'x');
-    print_early_hex32(uart_high_raw);
-    uart_early_putc(b'\n');
 }
 
 #[unsafe(no_mangle)]
 unsafe extern "C" fn init_page_tables_after_mmu() {
     unsafe {
         BOOT_PT[0x400] = A32PTE::empty();
+
+        let device_flags = MappingFlags::READ | MappingFlags::WRITE | MappingFlags::DEVICE;
+        for i in 0usize..128 {
+            let pa_section_base = 0x0800_0000usize + (i << 20);
+            let entry = A32PTE::new_section(pa!(pa_section_base), device_flags);
+
+            BOOT_PT[0x880 + i] = entry;
+        }
 
         let kernel_flags = MappingFlags::READ | MappingFlags::WRITE | MappingFlags::EXECUTE;
         for i in 0usize..128 {
@@ -276,6 +140,9 @@ unsafe extern "C" fn init_page_tables_after_mmu() {
             BOOT_PT[0xC00 + i] = entry;
         }
     }
+
+    // axcpu::asm::dsb();
+    // axcpu::asm::isb();
 
     uart_peuts("Page tables updated after MMU enabled.\n");
 }

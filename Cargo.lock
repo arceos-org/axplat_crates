@@ -4,9 +4,9 @@ version = 4
 
 [[package]]
 name = "aarch32-cpu"
-version = "0.1.0"
+version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5db6700cf01549520abec199376115e1ceb6fde1d1de30064f0f230be8a0c305"
+checksum = "1417bbf608824a44cb2fa2ad74b5ec28c0ae4c83df62a4bd2b532bf04c241ade"
 dependencies = [
  "arbitrary-int 2.0.0",
  "arm-targets",
@@ -163,17 +163,18 @@ name = "axcpu"
 version = "0.2.2"
 source = "git+https://github.com/arceos-org/axcpu.git?branch=arm-generic-timer#e9455b1b5af56a9f99a97f9fc4d69135eb20433d"
 dependencies = [
- "aarch64-cpu",
+ "aarch32-cpu",
+ "aarch64-cpu 10.0.0",
  "cfg-if",
  "lazyinit",
  "linkme",
  "log",
  "loongArch64",
  "memory_addr",
- "page_table_entry",
+ "page_table_entry 0.6.1",
  "page_table_multiarch",
  "percpu",
- "riscv",
+ "riscv 0.14.0",
  "static_assertions",
  "tock-registers 0.10.1",
  "x86",
@@ -204,7 +205,7 @@ dependencies = [
  "dw_apb_uart",
  "kspin",
  "log",
- "page_table_entry",
+ "page_table_entry 0.5.7",
 ]
 
 [[package]]
@@ -216,7 +217,7 @@ dependencies = [
  "axplat",
  "axplat-arm-peripherals",
  "log",
- "page_table_entry",
+ "page_table_entry 0.5.7",
 ]
 
 [[package]]
@@ -228,20 +229,20 @@ dependencies = [
  "axplat",
  "axplat-arm-peripherals",
  "log",
- "page_table_entry",
+ "page_table_entry 0.5.7",
 ]
 
 [[package]]
 name = "axplat-aarch64-raspi"
 version = "0.3.0"
 dependencies = [
- "aarch64-cpu",
+ "aarch64-cpu 10.0.0",
  "axconfig-macros",
  "axcpu",
  "axplat",
  "axplat-arm-peripherals",
  "log",
- "page_table_entry",
+ "page_table_entry 0.5.7",
 ]
 
 [[package]]
@@ -272,7 +273,7 @@ dependencies = [
  "log",
  "loongArch64",
  "ns16550a",
- "page_table_entry",
+ "page_table_entry 0.5.7",
 ]
 
 [[package]]
@@ -293,7 +294,7 @@ dependencies = [
  "axcpu",
  "axplat",
  "log",
- "riscv",
+ "riscv 0.14.0",
  "riscv_goldfish",
  "sbi-rt",
 ]
@@ -816,8 +817,8 @@ dependencies = [
  "arrayvec",
  "log",
  "memory_addr",
- "page_table_entry",
- "riscv",
+ "page_table_entry 0.6.1",
+ "riscv 0.16.0",
  "x86",
 ]
 

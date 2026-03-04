@@ -36,8 +36,14 @@ fn main(cpu_id: usize, arg: usize) -> ! {
     axplat::console_println!("Hello, ArceOS!");
     axplat::console_println!("cpu_id = {cpu_id}, arg = {arg:#x}");
 
-    for _ in 0..5 {
+    for i in 0..50 {
+        let tick_before = axplat::time::current_ticks();
         axplat::time::busy_wait(axplat::time::TimeValue::from_secs(1));
+        let tick_after = axplat::time::current_ticks();
+        axplat::console_println!(
+            "round {i}: ticks before = {tick_before}, ticks after = {tick_after}, delta = {}",
+            tick_after.saturating_sub(tick_before)
+        );
         axplat::console_println!("{:?} elapsed.", axplat::time::monotonic_time());
     }
 
