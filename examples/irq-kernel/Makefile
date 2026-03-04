@@ -42,6 +42,7 @@ qemu_args-loongarch64 := \
 
 qemu_args-arm := \
   -machine virt \
+  -cpu cortex-a15 \
   -m 1G \
   -kernel $(OUT_BIN)
 
