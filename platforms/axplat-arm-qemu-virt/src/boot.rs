@@ -96,6 +96,36 @@ pub unsafe extern "C" fn init_page_tables_after_mmu() {
             MappingFlags::READ | MappingFlags::WRITE | MappingFlags::DEVICE,
             true, // 1MB section
         );
+
+        // Map a device memory region (VirtIO MMIO window) 0x8A00_0000
+        BOOT_PT[0x8A0] = A32PTE::new_page(
+            pa!(0x0a00_0000),
+            MappingFlags::READ | MappingFlags::WRITE | MappingFlags::DEVICE,
+            true, // 1MB section
+        );
+
+        // Map device memory region (PCI ECAM window) 0xBF00_0000 ~ 0xC000_0000
+        for i in 0..16 {
+            BOOT_PT[0xBF0 + i] = A32PTE::new_page(
+                pa!(0x3f00_0000 + i * 0x10_0000),
+                MappingFlags::READ | MappingFlags::WRITE | MappingFlags::DEVICE,
+                true, // 1MB section
+            );
+        }
+
+        // Map a device memory region (PCI 32-bit MMIO window) 0x9000_0000
+        BOOT_PT[0x900] = A32PTE::new_page(
+            pa!(0x1000_0000),
+            MappingFlags::READ | MappingFlags::WRITE | MappingFlags::DEVICE,
+            true, // 1MB section
+        );
+
+        // Map a device memory region (PCI PIO window, 0x3EF_F0000 in this 1MB section)
+        BOOT_PT[0xBEF] = A32PTE::new_page(
+            pa!(0x3ef0_0000),
+            MappingFlags::READ | MappingFlags::WRITE | MappingFlags::DEVICE,
+            true, // 1MB section
+        );
     }
 
     // Invalidate entire TLB using aarch32_cpu abstraction
