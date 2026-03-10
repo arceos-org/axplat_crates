@@ -5,13 +5,14 @@ use core::mem::MaybeUninit;
 use axplat::mem::{PhysAddr, pa, phys_to_virt};
 use kspin::SpinNoIrq;
 use lazyinit::LazyInit;
-use x2apic::ioapic::IoApic;
+use x2apic::ioapic::{IoApic, IrqFlags};
 use x2apic::lapic::{LocalApic, LocalApicBuilder, xapic_base};
 use x86_64::instructions::port::Port;
 
 use self::vectors::*;
 
 pub(super) mod vectors {
+    pub const IO_APIC_VECTOR_BASE: usize = 0x20;
     pub const APIC_TIMER_VECTOR: u8 = 0xf0;
     pub const APIC_SPURIOUS_VECTOR: u8 = 0xf1;
     pub const APIC_ERROR_VECTOR: u8 = 0xf2;
@@ -25,14 +26,19 @@ static IO_APIC: LazyInit<SpinNoIrq<IoApic>> = LazyInit::new();
 
 /// Enables or disables the given IRQ.
 #[cfg(feature = "irq")]
-pub fn set_enable(vector: usize, enabled: bool) {
-    // should not affect LAPIC interrupts
+pub fn set_enable(irq: usize, enabled: bool) {
+    let vector = IO_APIC_VECTOR_BASE + irq;
+
+    // LAPIC internal vectors do not go through the IO-APIC.
     if vector < APIC_TIMER_VECTOR as _ {
         unsafe {
-            if enabled {
-                IO_APIC.lock().enable_irq(vector as u8);
-            } else {
-                IO_APIC.lock().disable_irq(vector as u8);
+            let mut io_apic = IO_APIC.lock();
+            if irq <= io_apic.max_table_entry() as usize {
+                if enabled {
+                    io_apic.enable_irq(irq as u8);
+                } else {
+                    io_apic.disable_irq(irq as u8);
+                }
             }
         }
     }
@@ -93,7 +99,32 @@ pub fn init_primary() {
     }
 
     info!("Initialize IO APIC...");
-    let io_apic = unsafe { IoApic::new(phys_to_virt(IO_APIC_BASE).as_usize() as u64) };
+    let mut io_apic = unsafe { IoApic::new(phys_to_virt(IO_APIC_BASE).as_usize() as u64) };
+    unsafe {
+        use x2apic::ioapic::{IrqMode, RedirectionTableEntry};
+
+        let max_entry = io_apic.max_table_entry();
+        info!(
+            "  IO-APIC supports {} IRQ inputs (0-{})",
+            max_entry + 1,
+            max_entry
+        );
+
+        for irq in 0..=max_entry {
+            let mut entry = RedirectionTableEntry::default();
+            entry.set_vector((IO_APIC_VECTOR_BASE as u8) + irq);
+            entry.set_dest(0);
+            entry.set_mode(IrqMode::Fixed);
+            if irq >= 10 {
+                entry
+                    .set_flags(IrqFlags::LEVEL_TRIGGERED | IrqFlags::LOW_ACTIVE | IrqFlags::MASKED);
+            } else {
+                entry.set_flags(IrqFlags::MASKED);
+            }
+            io_apic.set_table_entry(irq, entry);
+        }
+        info!("IO-APIC initialized and masked");
+    }
     IO_APIC.init_once(SpinNoIrq::new(io_apic));
 }
 
@@ -148,12 +179,24 @@ mod irq_impl {
         /// IRQ handler table and calls the corresponding handler. If necessary, it
         /// also acknowledges the interrupt controller after handling.
         fn handle(vector: usize) -> Option<usize> {
-            trace!("IRQ {}", vector);
-            if !IRQ_HANDLER_TABLE.handle(vector) {
-                warn!("Unhandled IRQ {vector}");
+            let irq = if vector >= super::APIC_TIMER_VECTOR as usize {
+                trace!("LAPIC IRQ {}", vector);
+                IRQ_HANDLER_TABLE.handle(vector);
+                unsafe { super::local_apic().end_of_interrupt() };
+                return Some(vector);
+            } else if vector >= super::IO_APIC_VECTOR_BASE {
+                vector - super::IO_APIC_VECTOR_BASE
+            } else {
+                return None;
+            };
+
+            trace!("IRQ {}", irq);
+            if !IRQ_HANDLER_TABLE.handle(irq) {
+                super::set_enable(irq, false);
+                warn!("Unhandled IRQ {irq} (vector {vector})");
             }
             unsafe { super::local_apic().end_of_interrupt() };
-            Some(vector)
+            Some(irq)
         }
 
         /// Sends an inter-processor interrupt (IPI) to the specified target CPU or all CPUs.
