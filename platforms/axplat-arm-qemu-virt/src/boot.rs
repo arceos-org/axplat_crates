@@ -1,7 +1,7 @@
 use crate::config::plat::{BOOT_STACK_SIZE, PHYS_VIRT_OFFSET};
 use axcpu::asm::{dsb, isb};
-use axplat::mem::{pa, Aligned4K};
-use page_table_entry::{arm::A32PTE, GenericPTE, MappingFlags};
+use axplat::mem::{Aligned4K, pa};
+use page_table_entry::{GenericPTE, MappingFlags, arm::A32PTE};
 
 /// Boot page table for ARM32 short-descriptor format.
 /// With TTBCR.N=1:
@@ -193,11 +193,7 @@ pub unsafe extern "C" fn add_boot_identity_mapping(pt_ptr: *mut u32) {
         MappingFlags::READ | MappingFlags::WRITE | MappingFlags::EXECUTE,
         true,
     );
-    unsafe {
-        pt_ptr
-            .add(0x400)
-            .write_volatile(entry.bits() as u32)
-    };
+    unsafe { pt_ptr.add(0x400).write_volatile(entry.bits() as u32) };
 }
 
 #[cfg(feature = "smp")]
