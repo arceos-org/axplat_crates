@@ -42,6 +42,6 @@ impl ConsoleIf for ConsoleIfImpl {
     /// Returns the IRQ number for the console, if applicable.
     #[cfg(feature = "irq")]
     fn irq_num() -> Option<usize> {
-        None
+        Some(4)
     }
 }
