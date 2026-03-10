@@ -164,7 +164,7 @@ version = "0.2.2"
 source = "git+https://github.com/arceos-org/axcpu.git?branch=arm-generic-timer#e9455b1b5af56a9f99a97f9fc4d69135eb20433d"
 dependencies = [
  "aarch32-cpu",
- "aarch64-cpu 10.0.0",
+ "aarch64-cpu 11.2.0",
  "cfg-if",
  "lazyinit",
  "linkme",
@@ -174,7 +174,7 @@ dependencies = [
  "page_table_entry 0.6.1",
  "page_table_multiarch",
  "percpu",
- "riscv 0.14.0",
+ "riscv 0.16.0",
  "static_assertions",
  "tock-registers 0.10.1",
  "x86",

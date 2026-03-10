@@ -88,7 +88,9 @@ virtio-mmio-ranges = [
 # Base physical address of the PCIe ECAM space.
 pci-ecam-base = 0x3f00_0000  # uint
 # End PCI bus number (`bus-range` property in device tree).
-pci-bus-end = 0xff              # uint
+# With `qemu-system-arm -machine virt,highmem=off`, ECAM window is 16 MiB,
+# which only covers buses 0..15.
+pci-bus-end = 0x0f              # uint
 # PCI device memory ranges (`ranges` property in device tree).
 pci-ranges = [
     [0x3ef_f0000, 0x1_0000],            # PIO space
