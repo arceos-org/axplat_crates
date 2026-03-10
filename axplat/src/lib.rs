@@ -3,7 +3,7 @@
 #![doc = include_str!("../README.md")]
 
 #[macro_use]
-extern crate axplat_macros;
+extern crate crate_interface;
 
 pub mod console;
 pub mod init;
@@ -14,7 +14,7 @@ pub mod power;
 pub mod time;
 
 pub use axplat_macros::main;
-pub use crate_interface::impl_interface as impl_plat_interface;
+pub use crate_interface::impl_interface;
 
 #[cfg(feature = "smp")]
 pub use axplat_macros::secondary_main;
@@ -22,7 +22,6 @@ pub use axplat_macros::secondary_main;
 #[doc(hidden)]
 pub mod __priv {
     pub use const_str::equal as const_str_eq;
-    pub use crate_interface::{call_interface, def_interface};
 }
 
 /// Checks that two strings are equal. If they are not equal, it will cause a compile-time

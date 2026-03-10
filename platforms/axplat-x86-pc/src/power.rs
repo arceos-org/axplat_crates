@@ -5,7 +5,7 @@ use x86_64::instructions::port::PortWriteOnly;
 
 struct PowerImpl;
 
-#[impl_plat_interface]
+#[impl_interface]
 impl PowerIf for PowerImpl {
     /// Bootstraps the given CPU core with the given initial stack (in physical
     /// address).

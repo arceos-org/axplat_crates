@@ -49,7 +49,7 @@ static IRQ_HANDLER_TABLE: HandlerTable<MAX_IRQ_COUNT> = HandlerTable::new();
 
 struct IrqIfImpl;
 
-#[impl_plat_interface]
+#[impl_interface]
 impl IrqIf for IrqIfImpl {
     /// Enables or disables the given IRQ.
     fn set_enable(irq_num: usize, enabled: bool) {

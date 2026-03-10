@@ -2,7 +2,7 @@ use axplat::irq::{IrqHandler, IrqIf, IpiTarget};
 
 struct IrqIfImpl;
 
-#[impl_plat_interface]
+#[impl_interface]
 impl IrqIf for IrqIfImpl {
     /// Enables or disables the given IRQ.
     fn set_enable(irq: usize, enabled: bool) {

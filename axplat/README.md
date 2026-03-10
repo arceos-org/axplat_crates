@@ -48,12 +48,12 @@ More APIs can be found in the [documentation](https://docs.rs/axplat/latest/axpl
 #### 1. Implement each interface trait
 
 ```rust
-use axplat::impl_plat_interface;
+use axplat::impl_interface;
 
 /// Implementation of Platform initialization.
 struct InitIfImpl;
 
-#[impl_plat_interface]
+#[impl_interface]
 impl axplat::init::InitIf for InitIfImpl {
     fn init_early(cpu_id: usize, arg: usize) { /* ... */ }
     fn init_later(cpu_id: usize, arg: usize) { /* ... */ }
@@ -64,7 +64,7 @@ impl axplat::init::InitIf for InitIfImpl {
 /// Implementation of Console input and output.
 struct ConsoleIfImpl;
 
-#[impl_plat_interface]
+#[impl_interface]
 impl axplat::console::ConsoleIf for ConsoleIfImpl {
     fn write_bytes(bytes: &[u8]) { /* ... */ }
     fn read_bytes(bytes: &mut [u8]) -> usize { /* ... */ 0 }

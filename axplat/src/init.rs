@@ -1,7 +1,7 @@
 //! Platform initialization.
 
 /// Platform initialization interface.
-#[def_plat_interface]
+#[def_interface(gen_caller)]
 pub trait InitIf {
     /// Initializes the platform at the early stage for the primary core.
     ///

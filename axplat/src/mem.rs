@@ -122,7 +122,7 @@ impl PhysMemRegion {
 }
 
 /// Physical memory interface.
-#[def_plat_interface]
+#[def_interface(gen_caller)]
 pub trait MemIf {
     /// Returns all physical memory (RAM) ranges on the platform.
     ///

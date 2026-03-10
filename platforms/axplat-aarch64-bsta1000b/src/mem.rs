@@ -9,7 +9,7 @@ pub(crate) const fn phys_to_virt(paddr: PhysAddr) -> VirtAddr {
     va!(paddr.as_usize() + PHYS_VIRT_OFFSET)
 }
 
-#[impl_plat_interface]
+#[impl_interface]
 impl MemIf for MemIfImpl {
     /// Returns all physical memory (RAM) ranges on the platform.
     ///

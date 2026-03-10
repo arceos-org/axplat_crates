@@ -5,7 +5,7 @@ use crate::config::plat::{PHYS_MEMORY_BASE, PHYS_MEMORY_SIZE, PHYS_VIRT_OFFSET};
 
 struct MemIfImpl;
 
-#[impl_plat_interface]
+#[impl_interface]
 impl MemIf for MemIfImpl {
     /// Returns all physical memory (RAM) ranges on the platform.
     ///

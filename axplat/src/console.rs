@@ -3,7 +3,7 @@
 use core::fmt::{Arguments, Result, Write};
 
 /// Console input and output interface.
-#[def_plat_interface]
+#[def_interface(gen_caller)]
 pub trait ConsoleIf {
     /// Writes given bytes to the console.
     fn write_bytes(bytes: &[u8]);
