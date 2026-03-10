@@ -1,7 +1,7 @@
 use crate::config::plat::{BOOT_STACK_SIZE, PHYS_VIRT_OFFSET};
 use axcpu::asm::{dsb, isb};
-// use aarch32_cpu::register::TlbIAll;
 use axplat::mem::{pa, Aligned4K};
+use memory_addr::VirtAddr;
 use page_table_entry::{arm::A32PTE, GenericPTE, MappingFlags};
 
 /// Boot page table for ARM32 short-descriptor format.
@@ -68,68 +68,35 @@ pub unsafe extern "C" fn init_page_tables(pt_ptr: *mut u32) {
 #[unsafe(no_mangle)]
 #[unsafe(link_section = ".text.boot")]
 pub unsafe extern "C" fn init_page_tables_after_mmu() {
+    // SECTION_SIZE is 1MB for ARMv7-A short-descriptor format when using section entries.
+    const SECTION_SIZE: usize = 0x10_0000;
     unsafe {
         // Unmap the identity mapping (PHYS_MEMORY_BASE)
         // Prevent accidental reads by other apps from physical address space.
         BOOT_PT[0x400] = A32PTE::empty();
 
-        // Map 0xC000_0000 ~ 0xC800_0000 to global allocated memory region
-        let start_idx = 0xC00;
-        for i in 0..128 {
-            BOOT_PT[start_idx + i] = A32PTE::new_page(
-                pa!(0x4000_0000 + i * 0x10_0000),
-                MappingFlags::READ | MappingFlags::WRITE | MappingFlags::EXECUTE,
-                true, // 1MB section
-            );
-        }
-
-        // Map a device memory region (GICV2) 0x8800_0000
-        BOOT_PT[0x880] = A32PTE::new_page(
-            pa!(0x0800_0000),
-            MappingFlags::READ | MappingFlags::WRITE | MappingFlags::DEVICE,
-            true, // 1MB section
-        );
-
-        // Map a device memory region (UART) 0x8900_0000
-        BOOT_PT[0x890] = A32PTE::new_page(
-            pa!(0x0900_0000),
-            MappingFlags::READ | MappingFlags::WRITE | MappingFlags::DEVICE,
-            true, // 1MB section
-        );
-
-        // Map a device memory region (VirtIO MMIO window) 0x8A00_0000
-        BOOT_PT[0x8A0] = A32PTE::new_page(
-            pa!(0x0a00_0000),
-            MappingFlags::READ | MappingFlags::WRITE | MappingFlags::DEVICE,
-            true, // 1MB section
-        );
-
-        // Map device memory region (PCI ECAM window) 0xBF00_0000 ~ 0xC000_0000
-        for i in 0..16 {
-            BOOT_PT[0xBF0 + i] = A32PTE::new_page(
-                pa!(0x3f00_0000 + i * 0x10_0000),
+        // Map all low memory (0..0x4000_0000) into 0x8000_0000..0xC000_0000
+        // as device memory so phys_to_virt() can access any MMIO range without
+        // depending on per-device boot-time mappings.
+        for i in 0..0x4000_0000 / SECTION_SIZE {
+            BOOT_PT[0x800 + i] = A32PTE::new_page(
+                pa!(i * SECTION_SIZE),
                 MappingFlags::READ | MappingFlags::WRITE | MappingFlags::DEVICE,
                 true, // 1MB section
             );
         }
 
-        // Map a device memory region (PCI 32-bit MMIO window) 0x9000_0000
-        BOOT_PT[0x900] = A32PTE::new_page(
-            pa!(0x1000_0000),
-            MappingFlags::READ | MappingFlags::WRITE | MappingFlags::DEVICE,
-            true, // 1MB section
-        );
-
-        // Map a device memory region (PCI PIO window, 0x3EF_F0000 in this 1MB section)
-        BOOT_PT[0xBEF] = A32PTE::new_page(
-            pa!(0x3ef0_0000),
-            MappingFlags::READ | MappingFlags::WRITE | MappingFlags::DEVICE,
-            true, // 1MB section
-        );
+        // Map the entire physical memory (0x4000_0000..0x8000_0000) into 0xC000_0000..0x10000_0000
+        for i in 0..128 {
+            BOOT_PT[0xC00 + i] = A32PTE::new_page(
+                pa!(0x4000_0000 + i * SECTION_SIZE),
+                MappingFlags::READ | MappingFlags::WRITE | MappingFlags::EXECUTE,
+                true, // 1MB section
+            );
+        }
     }
-
-    // Invalidate entire TLB using aarch32_cpu abstraction
-    // TlbIAll::write();
+    // Flush TLB to ensure the new page table entries take effect immediately.
+    axcpu::asm::flush_tlb(None);
 
     // Synchronization barriers using aarch32_cpu abstractions
     // These include compiler fences for proper ordering
@@ -215,6 +182,46 @@ pub unsafe extern "C" fn _start() -> ! {
 }
 
 #[cfg(feature = "smp")]
+#[unsafe(no_mangle)]
+#[unsafe(link_section = ".text.boot")]
+pub unsafe extern "C" fn add_boot_identity_mapping(pt_ptr: *mut u32) {
+    // Secondary CPUs are released by PSCI at a physical entry address.
+    // During the short window around `init_mmu`, the PC is still advancing
+    // through low physical addresses, so we must keep a 1MB identity map for
+    // 0x4000_0000..0x400F_FFFF until execution has branched to the high alias.
+    let entry = A32PTE::new_page(
+        pa!(0x4000_0000),
+        MappingFlags::READ | MappingFlags::WRITE | MappingFlags::EXECUTE,
+        true,
+    );
+    unsafe {
+        pt_ptr
+            .add(0x400)
+            .write_volatile(entry.bits() as u32)
+    };
+}
+
+#[cfg(feature = "smp")]
+#[unsafe(no_mangle)]
+#[unsafe(link_section = ".text.boot")]
+pub unsafe extern "C" fn remove_boot_identity_mapping() {
+    unsafe {
+        // Once the secondary CPU is already running from the high virtual
+        // mapping, the temporary identity map is no longer needed.
+        // Remove it promptly so low physical addresses are not left executable.
+        BOOT_PT[0x400] = A32PTE::empty();
+    }
+    // The page-table store above must be made visible to the MMU before we
+    // invalidate the corresponding TLB entry.
+    axcpu::asm::flush_tlb(Some(VirtAddr::from(0x4000_0000)));
+
+    // Synchronization barriers using aarch32_cpu abstractions
+    // These include compiler fences for proper ordering
+    dsb();
+    isb();
+}
+
+#[cfg(feature = "smp")]
 #[unsafe(naked)]
 #[allow(named_asm_labels)]
 pub unsafe extern "C" fn _start_secondary() -> ! {
@@ -232,12 +239,20 @@ pub unsafe extern "C" fn _start_secondary() -> ! {
         // Enable FPU
         bl {enable_fp}
 
-        // Calculate PA of BOOT_PT
+        // Reload r3 as it might be clobbered by function calls
         ldr r3, ={PHYS_VIRT_OFFSET}
+
+        // Get Physical Address of BOOT_PT
         ldr r0, ={BOOT_PT}
         sub r0, r0, r3
 
+        // Add temporary identity mapping for the MMU transition window
+        bl {add_boot_identity_mapping}
+
         // Enable MMU
+        ldr r3, ={PHYS_VIRT_OFFSET}
+        ldr r0, ={BOOT_PT}
+        sub r0, r0, r3
         bl {init_mmu}
 
         // Jump to trampoline
@@ -249,6 +264,10 @@ pub unsafe extern "C" fn _start_secondary() -> ! {
         ldr r3, ={PHYS_VIRT_OFFSET}
         add sp, sp, r3
 
+        // The CPU is now executing through the high virtual mapping, so the
+        // temporary low identity map can be torn down safely.
+        bl {remove_boot_identity_mapping}
+
         // Call secondary main
         mov r0, r11
         ldr r3, ={entry}
@@ -257,6 +276,8 @@ pub unsafe extern "C" fn _start_secondary() -> ! {
         PHYS_VIRT_OFFSET = const PHYS_VIRT_OFFSET,
         BOOT_PT = sym BOOT_PT,
         init_mmu = sym axcpu::init::init_mmu,
+        add_boot_identity_mapping = sym add_boot_identity_mapping,
+        remove_boot_identity_mapping = sym remove_boot_identity_mapping,
         entry = sym axplat::call_secondary_main,
         enable_fp = sym enable_fp,
     )

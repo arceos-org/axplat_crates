@@ -42,4 +42,4 @@ axplat-macros = { version = "0.1.0", path = "./axplat-macros" }
 axplat-arm-peripherals = { version = "0.3.0", path = "platforms/axplat-arm-peripherals" }
 
 [patch.crates-io]
-axcpu = { git = "https://github.com/arceos-org/axcpu.git", branch = "arm-generic-timer" }
+axcpu ={ git = "https://github.com/luodeb/axcpu.git" }

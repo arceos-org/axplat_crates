@@ -13,7 +13,6 @@ default = []
 [dependencies]
 axconfig-macros = "0.2"
 memory_addr = "0.4"
-kspin = "0.1"
 axcpu = "0.2"
 arm_pl011 = "0.1"
 lazy_static = { version = "1.5", features = ["spin_no_std"] }
