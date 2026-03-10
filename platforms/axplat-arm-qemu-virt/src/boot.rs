@@ -1,7 +1,6 @@
 use crate::config::plat::{BOOT_STACK_SIZE, PHYS_VIRT_OFFSET};
 use axcpu::asm::{dsb, isb};
 use axplat::mem::{pa, Aligned4K};
-use memory_addr::VirtAddr;
 use page_table_entry::{arm::A32PTE, GenericPTE, MappingFlags};
 
 /// Boot page table for ARM32 short-descriptor format.
@@ -213,7 +212,7 @@ pub unsafe extern "C" fn remove_boot_identity_mapping() {
     }
     // The page-table store above must be made visible to the MMU before we
     // invalidate the corresponding TLB entry.
-    axcpu::asm::flush_tlb(Some(VirtAddr::from(0x4000_0000)));
+    axcpu::asm::flush_tlb(Some(memory_addr::VirtAddr::from(0x4000_0000)));
 
     // Synchronization barriers using aarch32_cpu abstractions
     // These include compiler fences for proper ordering
