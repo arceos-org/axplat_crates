@@ -25,7 +25,9 @@ impl axplat::init::InitIf for InitIfImpl {
 
         axplat::console_println!("init_early on QEMU VIRT platform");
         #[cfg(feature = "rtc")]
-        axplat_arm_peripherals::pl031::init_early(phys_to_virt(pa!(crate::config::devices::RTC_PADDR)));
+        axplat_arm_peripherals::pl031::init_early(phys_to_virt(pa!(
+            crate::config::devices::RTC_PADDR
+        )));
     }
 
     /// Initializes the platform at the early stage for secondary cores.
