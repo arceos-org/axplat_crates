@@ -4,7 +4,7 @@ version = "0.3.0"
 edition = "2024"
 
 [features]
-irq = ["axplat/irq", "axplat-aarch64-peripherals/irq"]
+irq = ["axplat/irq", "axplat-arm-peripherals/irq"]
 smp = ["axplat/smp"]
 rtc = []
 fp-simd = ["axcpu/fp-simd"]
@@ -19,4 +19,4 @@ lazy_static = { version = "1.5", features = ["spin_no_std"] }
 page_table_entry = "0.6"
 log = "0.4"
 axplat = { workspace = true }
-axplat-aarch64-peripherals = { path = "../axplat-aarch64-peripherals" }
+axplat-arm-peripherals = { path = "../axplat-arm-peripherals" }

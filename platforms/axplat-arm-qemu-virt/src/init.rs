@@ -17,14 +17,15 @@ impl axplat::init::InitIf for InitIfImpl {
     /// early console, clocking).
     fn init_early(_cpu_id: usize, _dtb: usize) {
         axcpu::init::init_trap();
-        axplat_aarch64_peripherals::pl011::init_early(phys_to_virt(pa!(
+        axplat_arm_peripherals::pl011::init_early(phys_to_virt(pa!(
             crate::config::devices::UART_PADDR
         )));
-        axplat_aarch64_peripherals::psci::init(PSCI_METHOD);
+        axplat_arm_peripherals::psci::init(PSCI_METHOD);
+        axplat_arm_peripherals::generic_timer::init_early();
 
         axplat::console_println!("init_early on QEMU VIRT platform");
         #[cfg(feature = "rtc")]
-        axplat_aarch64_peripherals::pl031::init_early(phys_to_virt(pa!(crate::config::devices::RTC_PADDR)));
+        axplat_arm_peripherals::pl031::init_early(phys_to_virt(pa!(crate::config::devices::RTC_PADDR)));
     }
 
     /// Initializes the platform at the early stage for secondary cores.
@@ -41,12 +42,12 @@ impl axplat::init::InitIf for InitIfImpl {
     fn init_later(_cpu_id: usize, _dtb: usize) {
         #[cfg(feature = "irq")]
         {
-            axplat_aarch64_peripherals::gic::init_gic(
+            axplat_arm_peripherals::gic::init_gic(
                 phys_to_virt(pa!(crate::config::devices::GICD_PADDR)),
                 phys_to_virt(pa!(crate::config::devices::GICC_PADDR)),
             );
-            axplat_aarch64_peripherals::gic::init_gicc();
-            crate::generic_timer::enable_irqs(TIMER_IRQ);
+            axplat_arm_peripherals::gic::init_gicc();
+            axplat_arm_peripherals::generic_timer::enable_irqs(TIMER_IRQ);
         }
     }
 
@@ -55,8 +56,8 @@ impl axplat::init::InitIf for InitIfImpl {
     fn init_later_secondary(_cpu_id: usize) {
         #[cfg(feature = "irq")]
         {
-            axplat_aarch64_peripherals::gic::init_gicc();
-            crate::generic_timer::enable_irqs(TIMER_IRQ);
+            axplat_arm_peripherals::gic::init_gicc();
+            axplat_arm_peripherals::generic_timer::enable_irqs(TIMER_IRQ);
         }
     }
 }

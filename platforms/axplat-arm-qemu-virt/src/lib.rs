@@ -19,12 +19,12 @@ pub mod config {
 }
 
 mod boot;
-mod generic_timer;
 mod init;
 mod mem;
 mod power;
 
-axplat_aarch64_peripherals::console_if_impl!(ConsoleIfImpl);
+axplat_arm_peripherals::console_if_impl!(ConsoleIfImpl);
+axplat_arm_peripherals::time_if_impl!(TimeIfImpl);
 
 #[cfg(feature = "irq")]
-axplat_aarch64_peripherals::irq_if_impl!(IrqIfImpl);
+axplat_arm_peripherals::irq_if_impl!(IrqIfImpl);

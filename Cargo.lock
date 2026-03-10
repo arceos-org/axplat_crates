@@ -172,10 +172,10 @@ dependencies = [
  "log",
  "loongArch64",
  "memory_addr",
- "page_table_entry 0.6.1",
+ "page_table_entry",
  "page_table_multiarch",
  "percpu",
- "riscv 0.16.0",
+ "riscv",
  "static_assertions",
  "tock-registers 0.10.1",
  "x86",
@@ -206,7 +206,7 @@ dependencies = [
  "dw_apb_uart",
  "kspin",
  "log",
- "page_table_entry 0.5.7",
+ "page_table_entry",
 ]
 
 [[package]]
@@ -218,7 +218,7 @@ dependencies = [
  "axplat",
  "axplat-arm-peripherals",
  "log",
- "page_table_entry 0.5.7",
+ "page_table_entry",
 ]
 
 [[package]]
@@ -230,20 +230,20 @@ dependencies = [
  "axplat",
  "axplat-arm-peripherals",
  "log",
- "page_table_entry 0.5.7",
+ "page_table_entry",
 ]
 
 [[package]]
 name = "axplat-aarch64-raspi"
 version = "0.3.0"
 dependencies = [
- "aarch64-cpu 10.0.0",
+ "aarch64-cpu",
  "axconfig-macros",
  "axcpu",
  "axplat",
  "axplat-arm-peripherals",
  "log",
- "page_table_entry 0.5.7",
+ "page_table_entry",
 ]
 
 [[package]]
@@ -262,6 +262,21 @@ dependencies = [
 ]
 
 [[package]]
+name = "axplat-arm-qemu-virt"
+version = "0.3.0"
+dependencies = [
+ "arm_pl011",
+ "axconfig-macros",
+ "axcpu",
+ "axplat",
+ "axplat-arm-peripherals",
+ "lazy_static",
+ "log",
+ "memory_addr",
+ "page_table_entry",
+]
+
+[[package]]
 name = "axplat-loongarch64-qemu-virt"
 version = "0.3.0"
 dependencies = [
@@ -274,7 +289,7 @@ dependencies = [
  "log",
  "loongArch64",
  "ns16550a",
- "page_table_entry 0.5.7",
+ "page_table_entry",
 ]
 
 [[package]]
@@ -294,7 +309,7 @@ dependencies = [
  "axcpu",
  "axplat",
  "log",
- "riscv 0.14.0",
+ "riscv",
  "riscv_goldfish",
  "sbi-rt",
 ]
@@ -674,7 +689,7 @@ version = "1.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "bbd2bcb4c963f2ddae06a2efc7e9f3591312473c50c6685e1f298068316e66fe"
 dependencies = [
- "spin 0.9.8",
+ "spin",
 ]
 
 [[package]]
@@ -809,8 +824,8 @@ dependencies = [
  "arrayvec",
  "log",
  "memory_addr",
- "page_table_entry 0.6.1",
- "riscv 0.16.0",
+ "page_table_entry",
+ "riscv",
  "x86",
 ]
 
@@ -953,15 +968,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9a8e94ea7f378bd32cbbd37198a4a91436180c5bb472411e48b5ec2e2124ae9e"
 dependencies = [
  "serde_core",
- "serde_derive",
-]
-
-[[package]]
-name = "serde_core"
-version = "1.0.228"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "41d385c7d4ca58e59fc732af25c3983b67ac852c1a25000afe1175de458b67ad"
-dependencies = [
  "serde_derive",
 ]
 
