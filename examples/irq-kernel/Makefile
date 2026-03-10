@@ -37,7 +37,6 @@ qemu_args-aarch64 := \
 
 qemu_args-loongarch64 := \
   -machine virt \
-  -cpu cortex-a15 \
   -m 1G \
   -kernel $(OUT_ELF)
 
