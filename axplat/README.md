@@ -2,7 +2,7 @@
 
 [![Crates.io](https://img.shields.io/crates/v/axplat)](https://crates.io/crates/axplat)
 [![Docs.rs](https://docs.rs/axplat/badge.svg)](https://docs.rs/axplat)
-[![CI](https://github.com/arceos-org/axplat_crates/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/arceos-org/axplat_crates/actions/workflows/ci.yml)
+[![CI](https://github.com/arceos-org/axplat_crates/actions/workflows/test.yml/badge.svg?branch=main)](https://github.com/arceos-org/axplat_crates/actions/workflows/test.yml)
 
 This crate provides a unified abstraction layer for diverse hardware platforms. It allows kernel developers to bootstrap custom kernels across various platforms and interact with essential peripherals using hardware-agnostic APIs.
 

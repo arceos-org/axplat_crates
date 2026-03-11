@@ -1,6 +1,6 @@
 [package]
 name = "axplat-macros"
-version = "0.1.0"
+version = "0.2.0"
 description = "Procedural macros for the `axplat` crate"
 documentation = "https://docs.rs/axplat-macros"
 keywords = ["arceos", "os", "hal", "embedded", "macros"]
