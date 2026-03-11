@@ -1,7 +1,7 @@
 use crate::config::plat::{BOOT_STACK_SIZE, PHYS_VIRT_OFFSET};
 use axcpu::asm::{dsb, isb};
-use axplat::mem::{Aligned4K, pa};
-use page_table_entry::{GenericPTE, MappingFlags, arm::A32PTE};
+use axplat::mem::{pa, Aligned4K};
+use page_table_entry::{arm::A32PTE, GenericPTE, MappingFlags};
 
 // Number of 1MB sections for the temporary identity mapping
 const EARLY_BOOT_SECTION_NUM: usize = 4;
@@ -77,30 +77,32 @@ pub unsafe extern "C" fn init_page_tables_after_mmu() {
     // SECTION_SIZE is 1MB for ARMv7-A short-descriptor format when using section entries.
     const SECTION_SIZE: usize = 0x10_0000;
 
-    // Unmap the temporary 4MB identity window at 0x4000_0000..0x403F_FFFF
-    // after execution has switched to the high virtual mapping.
-    for i in 0..EARLY_BOOT_SECTION_NUM {
-        BOOT_PT[0x400 + i] = A32PTE::empty();
-    }
+    unsafe {
+        // Unmap the temporary 4MB identity window at 0x4000_0000..0x403F_FFFF
+        // after execution has switched to the high virtual mapping.
+        for i in 0..EARLY_BOOT_SECTION_NUM {
+            BOOT_PT[0x400 + i] = A32PTE::empty();
+        }
 
-    // Map all low memory (0..0x4000_0000) into 0x8000_0000..0xC000_0000
-    // as device memory so phys_to_virt() can access any MMIO range without
-    // depending on per-device boot-time mappings.
-    for i in 0..0x4000_0000 / SECTION_SIZE {
-        BOOT_PT[0x800 + i] = A32PTE::new_page(
-            pa!(i * SECTION_SIZE),
-            MappingFlags::READ | MappingFlags::WRITE | MappingFlags::DEVICE,
-            true, // 1MB section
-        );
-    }
+        // Map all low memory (0..0x4000_0000) into 0x8000_0000..0xC000_0000
+        // as device memory so phys_to_virt() can access any MMIO range without
+        // depending on per-device boot-time mappings.
+        for i in 0..0x4000_0000 / SECTION_SIZE {
+            BOOT_PT[0x800 + i] = A32PTE::new_page(
+                pa!(i * SECTION_SIZE),
+                MappingFlags::READ | MappingFlags::WRITE | MappingFlags::DEVICE,
+                true, // 1MB section
+            );
+        }
 
-    // Map the entire physical memory (0x4000_0000..0x8000_0000) into 0xC000_0000..0x1_0000_0000
-    for i in 0..0x4000_0000 / SECTION_SIZE {
-        BOOT_PT[0xC00 + i] = A32PTE::new_page(
-            pa!(0x4000_0000 + i * SECTION_SIZE),
-            MappingFlags::READ | MappingFlags::WRITE | MappingFlags::EXECUTE,
-            true, // 1MB section
-        );
+        // Map the entire physical memory (0x4000_0000..0x8000_0000) into 0xC000_0000..0x1_0000_0000
+        for i in 0..0x4000_0000 / SECTION_SIZE {
+            BOOT_PT[0xC00 + i] = A32PTE::new_page(
+                pa!(0x4000_0000 + i * SECTION_SIZE),
+                MappingFlags::READ | MappingFlags::WRITE | MappingFlags::EXECUTE,
+                true, // 1MB section
+            );
+        }
     }
 
     // Flush TLB to ensure the new page table entries take effect immediately.
