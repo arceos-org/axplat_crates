@@ -1,7 +1,7 @@
 use crate::config::plat::{BOOT_STACK_SIZE, PHYS_VIRT_OFFSET};
 use axcpu::asm::{dsb, isb};
-use axplat::mem::{pa, Aligned4K};
-use page_table_entry::{arm::A32PTE, GenericPTE, MappingFlags};
+use axplat::mem::{Aligned4K, pa};
+use page_table_entry::{GenericPTE, MappingFlags, arm::A32PTE};
 
 // Number of 1MB sections for the temporary identity mapping
 const EARLY_BOOT_SECTION_NUM: usize = 4;
