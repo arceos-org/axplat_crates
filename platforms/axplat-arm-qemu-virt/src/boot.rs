@@ -1,7 +1,10 @@
 use crate::config::plat::{BOOT_STACK_SIZE, PHYS_VIRT_OFFSET};
 use axcpu::asm::{dsb, isb};
-use axplat::mem::{Aligned4K, pa};
-use page_table_entry::{GenericPTE, MappingFlags, arm::A32PTE};
+use axplat::mem::{pa, Aligned4K};
+use page_table_entry::{arm::A32PTE, GenericPTE, MappingFlags};
+
+// Number of 1MB sections for the temporary identity mapping
+const EARLY_BOOT_SECTION_NUM: usize = 4;
 
 /// Boot page table for ARM32 short-descriptor format.
 /// With TTBCR.N=1:
@@ -31,33 +34,37 @@ static mut BOOT_STACK: [u8; BOOT_STACK_SIZE] = [0; BOOT_STACK_SIZE];
 #[unsafe(link_section = ".text.boot")]
 pub unsafe extern "C" fn init_page_tables(pt_ptr: *mut u32) {
     // 1. Identity Map (Low 2GB - TTBR0 region):
-    //    Mapping physical RAM (PHYS_MEMORY_BASE = 0x4000_0000) to itself.
-    //    This is required so the CPU can keep executing instructions immediately
-    //    after turning on the MMU (where PC is still pointing to physical addresses).
-    // Only map 1MB for Kernel Code & Data mainly.
-    let entry1 = A32PTE::new_page(
-        pa!(0x4000_0000),
-        MappingFlags::READ | MappingFlags::WRITE | MappingFlags::EXECUTE,
-        true, // 1MB section
-    );
-    unsafe {
-        pt_ptr
-            .add(0x4000_0000 >> 20)
-            .write_volatile(entry1.bits() as u32)
-    };
+    //    Temporarily map 0x4000_0000..0x403F_FFFF to itself.
+    //    This keeps the early boot code and boot stacks accessible while the CPU
+    //    is transitioning to the high virtual mapping right after enabling the MMU.
+    for i in 0..EARLY_BOOT_SECTION_NUM {
+        let paddr = 0x4000_0000 + i * 0x10_0000;
+        let entry1 = A32PTE::new_page(
+            pa!(paddr),
+            MappingFlags::READ | MappingFlags::WRITE | MappingFlags::EXECUTE,
+            true, // 1MB section
+        );
+        unsafe { pt_ptr.add(paddr >> 20).write_volatile(entry1.bits() as u32) };
+    }
 
     // 2. Kernel Linear Map (High 2GB - TTBR1 region):
-    //    Map physical RAM (PHYS_MEMORY_BASE) to KERNEL_BASE in high memory.
-    //    Virtual Range: KERNEL_BASE_VADDR (0xC000_0000) -> 0xFFFF_FFFF (TTBR1 region)
-    //    Physical Range: PHYS_MEMORY_BASE (0x4000_0000) -> 0x7FFF_FFFF
-    // Only map 1MB for Kernel Code & Data mainly.
+    //    Temporarily map 0x4000_0000..0x403F_FFFF to 0xC000_0000..0xC03F_FFFF.
+    //    This is enough for the early boot code and boot stacks before the full
+    //    kernel linear mapping is installed later.
     let start_idx = 0xC000_0000 >> 20;
-    let entry = A32PTE::new_page(
-        pa!(0x4000_0000),
-        MappingFlags::READ | MappingFlags::WRITE | MappingFlags::EXECUTE,
-        true, // 1MB section
-    ); // Normal Memory Attributes
-    unsafe { pt_ptr.add(start_idx).write_volatile(entry.bits() as u32) };
+    for i in 0..EARLY_BOOT_SECTION_NUM {
+        let paddr = 0x4000_0000 + i * 0x10_0000;
+        let entry = A32PTE::new_page(
+            pa!(paddr),
+            MappingFlags::READ | MappingFlags::WRITE | MappingFlags::EXECUTE,
+            true, // 1MB section
+        ); // Normal Memory Attributes
+        unsafe {
+            pt_ptr
+                .add(start_idx + i)
+                .write_volatile(entry.bits() as u32)
+        };
+    }
 }
 
 /// Map a new page after MMU is enabled.
@@ -69,31 +76,33 @@ pub unsafe extern "C" fn init_page_tables(pt_ptr: *mut u32) {
 pub unsafe extern "C" fn init_page_tables_after_mmu() {
     // SECTION_SIZE is 1MB for ARMv7-A short-descriptor format when using section entries.
     const SECTION_SIZE: usize = 0x10_0000;
-    unsafe {
-        // Unmap the identity mapping (PHYS_MEMORY_BASE)
-        // Prevent accidental reads by other apps from physical address space.
-        BOOT_PT[0x400] = A32PTE::empty();
 
-        // Map all low memory (0..0x4000_0000) into 0x8000_0000..0xC000_0000
-        // as device memory so phys_to_virt() can access any MMIO range without
-        // depending on per-device boot-time mappings.
-        for i in 0..0x4000_0000 / SECTION_SIZE {
-            BOOT_PT[0x800 + i] = A32PTE::new_page(
-                pa!(i * SECTION_SIZE),
-                MappingFlags::READ | MappingFlags::WRITE | MappingFlags::DEVICE,
-                true, // 1MB section
-            );
-        }
-
-        // Map the entire physical memory (0x4000_0000..0x8000_0000) into 0xC000_0000..0x10000_0000
-        for i in 0..128 {
-            BOOT_PT[0xC00 + i] = A32PTE::new_page(
-                pa!(0x4000_0000 + i * SECTION_SIZE),
-                MappingFlags::READ | MappingFlags::WRITE | MappingFlags::EXECUTE,
-                true, // 1MB section
-            );
-        }
+    // Unmap the temporary 4MB identity window at 0x4000_0000..0x403F_FFFF
+    // after execution has switched to the high virtual mapping.
+    for i in 0..EARLY_BOOT_SECTION_NUM {
+        BOOT_PT[0x400 + i] = A32PTE::empty();
     }
+
+    // Map all low memory (0..0x4000_0000) into 0x8000_0000..0xC000_0000
+    // as device memory so phys_to_virt() can access any MMIO range without
+    // depending on per-device boot-time mappings.
+    for i in 0..0x4000_0000 / SECTION_SIZE {
+        BOOT_PT[0x800 + i] = A32PTE::new_page(
+            pa!(i * SECTION_SIZE),
+            MappingFlags::READ | MappingFlags::WRITE | MappingFlags::DEVICE,
+            true, // 1MB section
+        );
+    }
+
+    // Map the entire physical memory (0x4000_0000..0x8000_0000) into 0xC000_0000..0x1_0000_0000
+    for i in 0..0x4000_0000 / SECTION_SIZE {
+        BOOT_PT[0xC00 + i] = A32PTE::new_page(
+            pa!(0x4000_0000 + i * SECTION_SIZE),
+            MappingFlags::READ | MappingFlags::WRITE | MappingFlags::EXECUTE,
+            true, // 1MB section
+        );
+    }
+
     // Flush TLB to ensure the new page table entries take effect immediately.
     axcpu::asm::flush_tlb(None);
 
@@ -185,15 +194,23 @@ pub unsafe extern "C" fn _start() -> ! {
 #[unsafe(link_section = ".text.boot")]
 pub unsafe extern "C" fn add_boot_identity_mapping(pt_ptr: *mut u32) {
     // Secondary CPUs are released by PSCI at a physical entry address.
-    // During the short window around `init_mmu`, the PC is still advancing
-    // through low physical addresses, so we must keep a 1MB identity map for
-    // 0x4000_0000..0x400F_FFFF until execution has branched to the high alias.
-    let entry = A32PTE::new_page(
-        pa!(0x4000_0000),
-        MappingFlags::READ | MappingFlags::WRITE | MappingFlags::EXECUTE,
-        true,
-    );
-    unsafe { pt_ptr.add(0x400).write_volatile(entry.bits() as u32) };
+    // During the short window around `init_mmu`, the PC and boot stack are
+    // still using low physical addresses, so keep the same temporary 4MB
+    // identity window at 0x4000_0000..0x403F_FFFF until execution branches to
+    // the high alias.
+    for i in 0..EARLY_BOOT_SECTION_NUM {
+        let paddr = 0x4000_0000 + i * 0x10_0000;
+        let entry = A32PTE::new_page(
+            pa!(paddr),
+            MappingFlags::READ | MappingFlags::WRITE | MappingFlags::EXECUTE,
+            true,
+        );
+        unsafe {
+            pt_ptr
+                .add((0x4000_0000 >> 20) + i)
+                .write_volatile(entry.bits() as u32)
+        };
+    }
 }
 
 #[cfg(feature = "smp")]
@@ -202,13 +219,19 @@ pub unsafe extern "C" fn add_boot_identity_mapping(pt_ptr: *mut u32) {
 pub unsafe extern "C" fn remove_boot_identity_mapping() {
     unsafe {
         // Once the secondary CPU is already running from the high virtual
-        // mapping, the temporary identity map is no longer needed.
+        // mapping, the temporary 4MB identity window is no longer needed.
         // Remove it promptly so low physical addresses are not left executable.
-        BOOT_PT[0x400] = A32PTE::empty();
+        for i in 0..EARLY_BOOT_SECTION_NUM {
+            BOOT_PT[0x400 + i] = A32PTE::empty();
+        }
     }
     // The page-table store above must be made visible to the MMU before we
     // invalidate the corresponding TLB entry.
-    axcpu::asm::flush_tlb(Some(memory_addr::VirtAddr::from(0x4000_0000)));
+    for i in 0..EARLY_BOOT_SECTION_NUM {
+        axcpu::asm::flush_tlb(Some(memory_addr::VirtAddr::from(
+            0x4000_0000 + i * 0x10_0000,
+        )));
+    }
 
     // Synchronization barriers using aarch32_cpu abstractions
     // These include compiler fences for proper ordering
