@@ -3,14 +3,6 @@
 #[macro_use]
 extern crate axplat;
 
-mod boot;
-mod init;
-mod mem;
-mod power;
-
-#[cfg(feature = "smp")]
-mod mp;
-
 pub mod config {
     //! Platform configuration module.
     //!
@@ -25,6 +17,11 @@ pub mod config {
         "`PACKAGE` field in the configuration does not match the Package name. Please check your configuration file."
     );
 }
+
+mod boot;
+mod init;
+mod mem;
+mod power;
 
 axplat_arm_peripherals::console_if_impl!(ConsoleIfImpl);
 axplat_arm_peripherals::time_if_impl!(TimeIfImpl);

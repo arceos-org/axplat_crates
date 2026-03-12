@@ -1,13 +1,14 @@
-use axplat::init::InitIf;
+use axplat::mem::{pa, phys_to_virt};
 
-#[allow(unused_imports)]
-use crate::config::devices::{GICC_PADDR, GICD_PADDR, TIMER_IRQ};
 use crate::config::plat::PSCI_METHOD;
+
+#[cfg(feature = "irq")]
+const TIMER_IRQ: usize = crate::config::devices::TIMER_IRQ;
 
 struct InitIfImpl;
 
 #[impl_plat_interface]
-impl InitIf for InitIfImpl {
+impl axplat::init::InitIf for InitIfImpl {
     /// Initializes the platform at the early stage for the primary core.
     ///
     /// This function should be called immediately after the kernel has booted,
@@ -15,9 +16,17 @@ impl InitIf for InitIfImpl {
     /// early console, clocking).
     fn init_early(_cpu_id: usize, _dtb: usize) {
         axcpu::init::init_trap();
+        axplat_arm_peripherals::pl011::init_early(phys_to_virt(pa!(
+            crate::config::devices::UART_PADDR
+        )));
         axplat_arm_peripherals::psci::init(PSCI_METHOD);
-        super::dw_apb_uart::init_early();
         axplat_arm_peripherals::generic_timer::init_early();
+
+        axplat::console_println!("init_early on QEMU VIRT platform");
+        #[cfg(feature = "rtc")]
+        axplat_arm_peripherals::pl031::init_early(phys_to_virt(pa!(
+            crate::config::devices::RTC_PADDR
+        )));
     }
 
     /// Initializes the platform at the early stage for secondary cores.
@@ -34,17 +43,12 @@ impl InitIf for InitIfImpl {
     fn init_later(_cpu_id: usize, _dtb: usize) {
         #[cfg(feature = "irq")]
         {
-            use crate::mem::phys_to_virt;
-            use axplat::mem::pa;
             axplat_arm_peripherals::gic::init_gic(
-                phys_to_virt(pa!(GICD_PADDR)),
-                phys_to_virt(pa!(GICC_PADDR)),
+                phys_to_virt(pa!(crate::config::devices::GICD_PADDR)),
+                phys_to_virt(pa!(crate::config::devices::GICC_PADDR)),
             );
             axplat_arm_peripherals::gic::init_gicc();
             axplat_arm_peripherals::generic_timer::enable_irqs(TIMER_IRQ);
-
-            // enable UART IRQs
-            crate::dw_apb_uart::init_irq();
         }
     }
 

@@ -7,13 +7,14 @@ members = [
     "cargo-axplat",
 
     "platforms/axplat-x86-pc",
-    "platforms/axplat-aarch64-peripherals",
+    "platforms/axplat-arm-peripherals",
     "platforms/axplat-aarch64-qemu-virt",
     "platforms/axplat-aarch64-raspi",
     "platforms/axplat-aarch64-bsta1000b",
     "platforms/axplat-aarch64-phytium-pi",
     "platforms/axplat-riscv64-qemu-virt",
     "platforms/axplat-loongarch64-qemu-virt",
+    "platforms/axplat-arm-qemu-virt",
 
     "examples/hello-kernel",
     "examples/irq-kernel",
@@ -38,4 +39,7 @@ repository = "https://github.com/arceos-org/axplat_crates"
 axcpu = "0.2"
 axplat = { version = "0.3.0", path = "./axplat" }
 axplat-macros = { version = "0.1.0", path = "./axplat-macros" }
-axplat-aarch64-peripherals = { version = "0.3.0", path = "platforms/axplat-aarch64-peripherals" }
+axplat-arm-peripherals = { version = "0.3.0", path = "platforms/axplat-arm-peripherals" }
+
+[patch.crates-io]
+axcpu ={ git = "https://github.com/luodeb/axcpu.git" }

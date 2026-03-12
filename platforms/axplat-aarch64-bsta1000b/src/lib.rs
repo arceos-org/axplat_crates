@@ -29,7 +29,7 @@ mod misc;
 mod mp;
 mod power;
 
-axplat_aarch64_peripherals::time_if_impl!(TimeIfImpl);
+axplat_arm_peripherals::time_if_impl!(TimeIfImpl);
 
 #[cfg(feature = "irq")]
-axplat_aarch64_peripherals::irq_if_impl!(IrqIfImpl);
+axplat_arm_peripherals::irq_if_impl!(IrqIfImpl);
