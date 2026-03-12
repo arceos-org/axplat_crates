@@ -78,12 +78,6 @@ pub unsafe extern "C" fn init_page_tables_after_mmu() {
     const SECTION_SIZE: usize = 0x10_0000;
 
     unsafe {
-        // Unmap the temporary 4MB identity window at 0x4000_0000..0x403F_FFFF
-        // after execution has switched to the high virtual mapping.
-        for i in 0..EARLY_BOOT_SECTION_NUM {
-            BOOT_PT[0x400 + i] = A32PTE::empty();
-        }
-
         // Map all low memory (0..0x4000_0000) into 0x8000_0000..0xC000_0000
         // as device memory so phys_to_virt() can access any MMIO range without
         // depending on per-device boot-time mappings.
@@ -192,56 +186,6 @@ pub unsafe extern "C" fn _start() -> ! {
 }
 
 #[cfg(feature = "smp")]
-#[unsafe(no_mangle)]
-#[unsafe(link_section = ".text.boot")]
-pub unsafe extern "C" fn add_boot_identity_mapping(pt_ptr: *mut u32) {
-    // Secondary CPUs are released by PSCI at a physical entry address.
-    // During the short window around `init_mmu`, the PC and boot stack are
-    // still using low physical addresses, so keep the same temporary 4MB
-    // identity window at 0x4000_0000..0x403F_FFFF until execution branches to
-    // the high alias.
-    for i in 0..EARLY_BOOT_SECTION_NUM {
-        let paddr = 0x4000_0000 + i * 0x10_0000;
-        let entry = A32PTE::new_page(
-            pa!(paddr),
-            MappingFlags::READ | MappingFlags::WRITE | MappingFlags::EXECUTE,
-            true,
-        );
-        unsafe {
-            pt_ptr
-                .add((0x4000_0000 >> 20) + i)
-                .write_volatile(entry.bits() as u32)
-        };
-    }
-}
-
-#[cfg(feature = "smp")]
-#[unsafe(no_mangle)]
-#[unsafe(link_section = ".text.boot")]
-pub unsafe extern "C" fn remove_boot_identity_mapping() {
-    unsafe {
-        // Once the secondary CPU is already running from the high virtual
-        // mapping, the temporary 4MB identity window is no longer needed.
-        // Remove it promptly so low physical addresses are not left executable.
-        for i in 0..EARLY_BOOT_SECTION_NUM {
-            BOOT_PT[0x400 + i] = A32PTE::empty();
-        }
-    }
-    // The page-table store above must be made visible to the MMU before we
-    // invalidate the corresponding TLB entry.
-    for i in 0..EARLY_BOOT_SECTION_NUM {
-        axcpu::asm::flush_tlb(Some(memory_addr::VirtAddr::from(
-            0x4000_0000 + i * 0x10_0000,
-        )));
-    }
-
-    // Synchronization barriers using aarch32_cpu abstractions
-    // These include compiler fences for proper ordering
-    dsb();
-    isb();
-}
-
-#[cfg(feature = "smp")]
 #[unsafe(naked)]
 #[allow(named_asm_labels)]
 pub unsafe extern "C" fn _start_secondary() -> ! {
@@ -259,16 +203,6 @@ pub unsafe extern "C" fn _start_secondary() -> ! {
         // Enable FPU
         bl {enable_fp}
 
-        // Reload r3 as it might be clobbered by function calls
-        ldr r3, ={PHYS_VIRT_OFFSET}
-
-        // Get Physical Address of BOOT_PT
-        ldr r0, ={BOOT_PT}
-        sub r0, r0, r3
-
-        // Add temporary identity mapping for the MMU transition window
-        bl {add_boot_identity_mapping}
-
         // Enable MMU
         ldr r3, ={PHYS_VIRT_OFFSET}
         ldr r0, ={BOOT_PT}
@@ -284,10 +218,6 @@ pub unsafe extern "C" fn _start_secondary() -> ! {
         ldr r3, ={PHYS_VIRT_OFFSET}
         add sp, sp, r3
 
-        // The CPU is now executing through the high virtual mapping, so the
-        // temporary low identity map can be torn down safely.
-        bl {remove_boot_identity_mapping}
-
         // Call secondary main
         mov r0, r11
         ldr r3, ={entry}
@@ -296,8 +226,6 @@ pub unsafe extern "C" fn _start_secondary() -> ! {
         PHYS_VIRT_OFFSET = const PHYS_VIRT_OFFSET,
         BOOT_PT = sym BOOT_PT,
         init_mmu = sym axcpu::init::init_mmu,
-        add_boot_identity_mapping = sym add_boot_identity_mapping,
-        remove_boot_identity_mapping = sym remove_boot_identity_mapping,
         entry = sym axplat::call_secondary_main,
         enable_fp = sym enable_fp,
     )
