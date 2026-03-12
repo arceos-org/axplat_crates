@@ -20,7 +20,7 @@ pub const NANOS_PER_MILLIS: u64 = 1_000_000;
 pub const NANOS_PER_MICROS: u64 = 1_000;
 
 /// Time-related interfaces.
-#[def_plat_interface]
+#[def_interface(gen_caller)]
 pub trait TimeIf {
     /// Returns the current clock time in hardware ticks.
     fn current_ticks() -> u64;

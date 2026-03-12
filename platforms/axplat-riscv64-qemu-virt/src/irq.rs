@@ -57,7 +57,7 @@ pub(super) fn init_percpu() {
 
 struct IrqIfImpl;
 
-#[impl_plat_interface]
+#[impl_interface]
 impl IrqIf for IrqIfImpl {
     /// Enables or disables the given IRQ.
     fn set_enable(irq: usize, _enabled: bool) {

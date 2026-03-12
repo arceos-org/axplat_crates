@@ -2,7 +2,7 @@ use axplat::init::InitIf;
 
 struct InitIfImpl;
 
-#[impl_plat_interface]
+#[impl_interface]
 impl InitIf for InitIfImpl {
     /// This function should be called immediately after the kernel has booted,
     /// and performed earliest platform configuration and initialization (e.g.,

@@ -6,7 +6,7 @@ use crate::config::plat::PSCI_METHOD;
 
 struct InitIfImpl;
 
-#[impl_plat_interface]
+#[impl_interface]
 impl InitIf for InitIfImpl {
     /// Initializes the platform at the early stage for the primary core.
     ///

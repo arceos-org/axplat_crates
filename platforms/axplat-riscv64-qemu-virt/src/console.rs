@@ -20,7 +20,7 @@ use axplat::console::ConsoleIf;
 
 struct ConsoleIfImpl;
 
-#[impl_plat_interface]
+#[impl_interface]
 impl ConsoleIf for ConsoleIfImpl {
     /// Writes bytes to the console from input u8 slice.
     fn write_bytes(bytes: &[u8]) {

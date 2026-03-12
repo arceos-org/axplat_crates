@@ -2,7 +2,7 @@
 
 [![Crates.io](https://img.shields.io/crates/v/axplat)](https://crates.io/crates/axplat)
 [![Docs.rs](https://docs.rs/axplat/badge.svg)](https://docs.rs/axplat)
-[![CI](https://github.com/arceos-org/axplat_crates/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/arceos-org/axplat_crates/actions/workflows/ci.yml)
+[![CI](https://github.com/arceos-org/axplat_crates/actions/workflows/test.yml/badge.svg?branch=main)](https://github.com/arceos-org/axplat_crates/actions/workflows/test.yml)
 
 This crate provides a unified abstraction layer for diverse hardware platforms. It allows kernel developers to bootstrap custom kernels across various platforms and interact with essential peripherals using hardware-agnostic APIs.
 
@@ -48,12 +48,12 @@ More APIs can be found in the [documentation](https://docs.rs/axplat/latest/axpl
 #### 1. Implement each interface trait
 
 ```rust
-use axplat::impl_plat_interface;
+use axplat::impl_interface;
 
 /// Implementation of Platform initialization.
 struct InitIfImpl;
 
-#[impl_plat_interface]
+#[impl_interface]
 impl axplat::init::InitIf for InitIfImpl {
     fn init_early(cpu_id: usize, arg: usize) { /* ... */ }
     fn init_later(cpu_id: usize, arg: usize) { /* ... */ }
@@ -64,7 +64,7 @@ impl axplat::init::InitIf for InitIfImpl {
 /// Implementation of Console input and output.
 struct ConsoleIfImpl;
 
-#[impl_plat_interface]
+#[impl_interface]
 impl axplat::console::ConsoleIf for ConsoleIfImpl {
     fn write_bytes(bytes: &[u8]) { /* ... */ }
     fn read_bytes(bytes: &mut [u8]) -> usize { /* ... */ 0 }

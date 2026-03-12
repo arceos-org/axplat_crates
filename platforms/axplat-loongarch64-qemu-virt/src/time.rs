@@ -89,7 +89,7 @@ pub(super) fn init_early() {
 
 struct TimeIfImpl;
 
-#[impl_plat_interface]
+#[impl_interface]
 impl TimeIf for TimeIfImpl {
     /// Returns the current clock time in hardware ticks.
     fn current_ticks() -> u64 {

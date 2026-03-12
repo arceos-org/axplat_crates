@@ -27,7 +27,7 @@ pub enum IpiTarget {
 }
 
 /// IRQ management interface.
-#[def_plat_interface]
+#[def_interface(gen_caller)]
 pub trait IrqIf {
     /// Enables or disables the given IRQ.
     fn set_enable(irq: usize, enabled: bool);

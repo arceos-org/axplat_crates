@@ -6,7 +6,7 @@ use crate::config::devices::{GICC_PADDR, GICD_PADDR, TIMER_IRQ, UART_IRQ, UART_P
 
 struct InitIfImpl;
 
-#[impl_plat_interface]
+#[impl_interface]
 impl InitIf for InitIfImpl {
     /// Initializes the platform at the early stage for the primary core.
     ///

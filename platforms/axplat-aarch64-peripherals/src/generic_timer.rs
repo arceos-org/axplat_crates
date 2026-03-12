@@ -68,7 +68,7 @@ macro_rules! time_if_impl {
     ($name:ident) => {
         struct $name;
 
-        #[impl_plat_interface]
+        #[impl_interface]
         impl axplat::time::TimeIf for $name {
             /// Returns the current clock time in hardware ticks.
             fn current_ticks() -> u64 {

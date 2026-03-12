@@ -1,7 +1,7 @@
 //! Power management.
 
 /// Power management interface.
-#[def_plat_interface]
+#[def_interface(gen_caller)]
 pub trait PowerIf {
     /// Bootstraps the given CPU core with the given initial stack (in physical
     /// address).

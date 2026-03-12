@@ -74,7 +74,7 @@ macro_rules! console_if_impl {
     ($name:ident) => {
         struct $name;
 
-        #[axplat::impl_plat_interface]
+        #[axplat::impl_interface]
         impl axplat::console::ConsoleIf for $name {
             /// Writes given bytes to the console.
             fn write_bytes(bytes: &[u8]) {

@@ -42,7 +42,7 @@ impl MemoryManagement for MemIfImpl {
     unsafe fn deallocate(&mut self, _addr: PAddr) {}
 }
 
-#[impl_plat_interface]
+#[impl_interface]
 impl MemIf for MemIfImpl {
     /// Returns all physical memory (RAM) ranges on the platform.
     fn phys_ram_ranges() -> &'static [RawRange] {

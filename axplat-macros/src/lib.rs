@@ -3,7 +3,7 @@
 use proc_macro::TokenStream;
 use proc_macro2::Span;
 use quote::quote;
-use syn::{Error, FnArg, ItemFn, ItemTrait, ReturnType, TraitItem};
+use syn::{Error, FnArg, ItemFn, ReturnType};
 
 fn compiler_error(err: Error) -> TokenStream {
     err.to_compile_error().into()
@@ -103,56 +103,4 @@ pub fn secondary_main(attr: TokenStream, item: TokenStream) -> TokenStream {
         "__axplat_secondary_main",
         "expect a function with type `fn(cpu_id: usize) -> !`",
     )
-}
-
-#[doc(hidden)]
-#[proc_macro_attribute]
-pub fn def_plat_interface(attr: TokenStream, item: TokenStream) -> TokenStream {
-    if !attr.is_empty() {
-        return compiler_error(Error::new(
-            Span::call_site(),
-            "expect an empty attribute: `#[def_plat_interface]`",
-        ));
-    }
-
-    let trait_ast = syn::parse_macro_input!(item as ItemTrait);
-    let trait_name = &trait_ast.ident;
-
-    let mut fn_list = vec![];
-    for item in &trait_ast.items {
-        if let TraitItem::Fn(method) = item {
-            let attrs = &method.attrs;
-            let sig = &method.sig;
-            let fn_name = &sig.ident;
-
-            let mut args = vec![];
-            for arg in &sig.inputs {
-                match arg {
-                    FnArg::Receiver(_) => {
-                        return compiler_error(Error::new_spanned(
-                            arg,
-                            "`self` is not allowed in the interface definition",
-                        ));
-                    }
-                    FnArg::Typed(ty) => args.push(ty.pat.clone()),
-                }
-            }
-
-            fn_list.push(quote! {
-                #(#attrs)*
-                #[inline]
-                pub #sig {
-                    crate::__priv::call_interface!(#trait_name::#fn_name, #(#args),* )
-                }
-            });
-        }
-    }
-
-    quote! {
-        #[crate::__priv::def_interface]
-        #trait_ast
-
-        #(#fn_list)*
-    }
-    .into()
 }
