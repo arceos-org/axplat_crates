@@ -13,16 +13,16 @@ repository.workspace = true
 
 [features]
 fp-simd = ["axcpu/fp-simd"]
-irq = ["axplat/irq", "axplat-aarch64-peripherals/irq"]
+irq = ["axplat/irq", "axplat-arm-peripherals/irq"]
 rtc = [] # Not implemented, currently no effect
 smp = ["axplat/smp"]
 
 [dependencies]
 log = "0.4"
-aarch64-cpu = "10.0"
-page_table_entry = "0.5"
+aarch64-cpu = "11.2"
+page_table_entry = "0.6"
 axconfig-macros = "0.2"
-axplat-aarch64-peripherals = { workspace = true }
+axplat-arm-peripherals = { workspace = true }
 axcpu = { workspace = true }
 axplat = { workspace = true }
 

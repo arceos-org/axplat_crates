@@ -12,7 +12,7 @@ repository.workspace = true
 
 [dependencies]
 clap = { version = "4", features = ["derive"] }
-clap-cargo = "0.16"
-cargo_metadata = "0.22"
-toml_edit = "0.23"
+clap-cargo = "0.18"
+cargo_metadata = "0.23"
+toml_edit = "0.25"
 thiserror = "2.0"
