@@ -1,5 +1,4 @@
-use axplat::mem::phys_to_virt;
-use memory_addr::pa;
+use axplat::mem::{pa, phys_to_virt};
 
 use crate::config::plat::PSCI_METHOD;
 

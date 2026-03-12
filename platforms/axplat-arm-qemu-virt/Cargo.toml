@@ -12,11 +12,7 @@ default = []
 
 [dependencies]
 axconfig-macros = "0.2"
-memory_addr = "0.4"
 axcpu = "0.2"
-arm_pl011 = "0.1"
-lazy_static = { version = "1.5", features = ["spin_no_std"] }
 page_table_entry = "0.6"
-log = "0.4"
 axplat = { workspace = true }
-axplat-arm-peripherals = { path = "../axplat-arm-peripherals" }
+axplat-arm-peripherals = { workspace = true }

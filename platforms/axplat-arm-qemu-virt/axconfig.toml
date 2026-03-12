@@ -12,7 +12,6 @@ package = "axplat-arm-qemu-virt"            # str
 # Maximum number of CPUs. For platforms that do not support runtime CPU number
 # detection, it's also the number of CPUs to boot.
 max-cpu-num = 1                     # uint
-cpu-num=1                        # uint
 # Base address of the whole physical memory.
 phys-memory-base = 0x4000_0000      # uint
 # Size of the whole physical memory. (128M)
@@ -28,7 +27,7 @@ phys-virt-offset = "0x80000000"      # uint
 # different from the physical address.
 phys-bus-offset = 0                             # uint
 # Kernel address space base.
-kernel-aspace-base = "0x0000"    # uint
+kernel-aspace-base = "0xC0010000"    # uint
 # Kernel address space size.
 kernel-aspace-size = "0xffff_f000"    # uint
 # Stack size on bootstrapping. (256K)
