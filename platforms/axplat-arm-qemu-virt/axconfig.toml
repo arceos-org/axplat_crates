@@ -27,9 +27,9 @@ phys-virt-offset = "0x80000000"      # uint
 # different from the physical address.
 phys-bus-offset = 0                             # uint
 # Kernel address space base.
-kernel-aspace-base = "0xC0010000"    # uint
+kernel-aspace-base = "0x8000_0000"    # uint
 # Kernel address space size.
-kernel-aspace-size = "0xffff_f000"    # uint
+kernel-aspace-size = "0x7fff_f000"    # uint
 # Stack size on bootstrapping. (256K)
 boot-stack-size = 0x40000                       # uint
 
