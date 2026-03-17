@@ -36,20 +36,16 @@ fn get_files_recursively(dir: &Utf8Path, prefix: &str) -> io::Result<Vec<String>
 }
 
 fn main() -> io::Result<()> {
-    let src_dir = Utf8PathBuf::from(
-        env::var("CARGO_MANIFEST_DIR").map_err(|e| match e {
-            env::VarError::NotPresent => io::Error::new(io::ErrorKind::NotFound, e),
-            env::VarError::NotUnicode(_) => io::Error::new(io::ErrorKind::InvalidData, e),
-        })?,
-    )
+    let src_dir = Utf8PathBuf::from(env::var("CARGO_MANIFEST_DIR").map_err(|e| match e {
+        env::VarError::NotPresent => io::Error::new(io::ErrorKind::NotFound, e),
+        env::VarError::NotUnicode(_) => io::Error::new(io::ErrorKind::InvalidData, e),
+    })?)
     .join(TEMPLATE_DIR);
     println!("cargo:rerun-if-changed={}", src_dir.as_str());
-    let out_path = Utf8PathBuf::from(
-        env::var("OUT_DIR").map_err(|e| match e {
-            env::VarError::NotPresent => io::Error::new(io::ErrorKind::NotFound, e),
-            env::VarError::NotUnicode(_) => io::Error::new(io::ErrorKind::InvalidData, e),
-        })?,
-    )
+    let out_path = Utf8PathBuf::from(env::var("OUT_DIR").map_err(|e| match e {
+        env::VarError::NotPresent => io::Error::new(io::ErrorKind::NotFound, e),
+        env::VarError::NotUnicode(_) => io::Error::new(io::ErrorKind::InvalidData, e),
+    })?)
     .join("template.rs");
 
     let mut f = File::create(out_path.as_std_path())?;
