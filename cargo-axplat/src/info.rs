@@ -58,6 +58,9 @@ enum PlatformInfoErr {
     #[error("configuration file not found at `{0}`")]
     NoConfig(String),
 
+    #[error("error reading configuration file `{1}`: {0}")]
+    ConfigIo(#[source] std::io::Error, String),
+
     #[error("invalid configuration file `{0}`")]
     InvalidConfig(String),
 
@@ -147,8 +150,12 @@ impl PlatformInfo {
 }
 
 fn parse_config(config_path: &Utf8Path) -> Result<(String, String), PlatformInfoErr> {
-    let toml = std::fs::read_to_string(config_path.as_std_path())
-        .map_err(|_| PlatformInfoErr::NoConfig(config_path.to_string()))?;
+    let toml = std::fs::read_to_string(config_path.as_std_path()).map_err(|err| {
+        match err.kind() {
+            std::io::ErrorKind::NotFound => PlatformInfoErr::NoConfig(config_path.to_string()),
+            _ => PlatformInfoErr::ConfigIo(err, config_path.to_string()),
+        }
+    })?;
     (|| {
         let config = toml.parse::<DocumentMut>().ok()?;
         let plat_name = config["platform"].as_str()?.to_string();
