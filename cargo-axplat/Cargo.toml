@@ -16,3 +16,7 @@ clap-cargo = "0.16"
 cargo_metadata = "0.22"
 toml_edit = "0.23"
 thiserror = "2.0"
+camino = "1.2.2"
+
+[build-dependencies]
+camino = "1.2.2"
