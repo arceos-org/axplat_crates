@@ -1,5 +1,5 @@
-use cargo_metadata::{CargoOpt, MetadataCommand, Package};
 use camino::{Utf8Path, Utf8PathBuf};
+use cargo_metadata::{CargoOpt, MetadataCommand, Package};
 use clap::Parser;
 use toml_edit::DocumentMut;
 
