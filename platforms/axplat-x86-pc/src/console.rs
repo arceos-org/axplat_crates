@@ -4,6 +4,8 @@ use lazyinit::LazyInit;
 use uart_16550::{Config, Uart16550, backend::PioBackend};
 
 const COM1_PORT: u16 = 0x3F8;
+static COM1: SpinNoIrq<SerialPort> = unsafe { SpinNoIrq::new(SerialPort::new(0x3f8)) };
+const COM1_IRQ: usize = 4;
 
 static UART: LazyInit<SpinNoIrq<Uart16550<PioBackend>>> = LazyInit::new();
 
@@ -42,6 +44,6 @@ impl ConsoleIf for ConsoleIfImpl {
     /// Returns the IRQ number for the console, if applicable.
     #[cfg(feature = "irq")]
     fn irq_num() -> Option<usize> {
-        Some(4)
+        Some(COM1_IRQ)
     }
 }
