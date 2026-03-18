@@ -29,18 +29,13 @@ static IO_APIC: LazyInit<SpinNoIrq<IoApic>> = LazyInit::new();
 /// Enables or disables the given IRQ.
 #[cfg(feature = "irq")]
 pub fn set_enable(irq: usize, enabled: bool) {
-    let vector = IO_APIC_VECTOR_BASE + irq;
-
-    // LAPIC internal vectors do not go through the IO-APIC.
-    if vector < APIC_TIMER_VECTOR as _ {
-        unsafe {
-            let mut io_apic = IO_APIC.lock();
-            if irq <= io_apic.max_table_entry() as usize {
-                if enabled {
-                    io_apic.enable_irq(irq as u8);
-                } else {
-                    io_apic.disable_irq(irq as u8);
-                }
+    unsafe {
+        let mut io_apic = IO_APIC.lock();
+        if irq <= io_apic.max_table_entry() as usize {
+            if enabled {
+                io_apic.enable_irq(irq as u8);
+            } else {
+                io_apic.disable_irq(irq as u8);
             }
         }
     }
@@ -158,7 +153,12 @@ mod irq_impl {
     impl IrqIf for IrqIfImpl {
         /// Enables or disables the given IRQ.
         fn set_enable(vector: usize, enabled: bool) {
-            super::set_enable(vector, enabled);
+            if vector >= super::APIC_TIMER_VECTOR as usize || vector < super::IO_APIC_VECTOR_BASE {
+                return;
+            }
+
+            let irq = vector - super::IO_APIC_VECTOR_BASE;
+            super::set_enable(irq, enabled);
         }
 
         /// Registers an IRQ handler for the given IRQ.
