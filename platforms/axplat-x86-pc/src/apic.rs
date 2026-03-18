@@ -189,7 +189,9 @@ mod irq_impl {
         fn handle(vector: usize) -> Option<usize> {
             let irq = if vector >= super::APIC_TIMER_VECTOR as usize {
                 trace!("LAPIC IRQ {}", vector);
-                IRQ_HANDLER_TABLE.handle(vector);
+                if !IRQ_HANDLER_TABLE.handle(vector) {
+                    warn!("Unhandled LAPIC IRQ vector {vector}");
+                }
                 unsafe { super::local_apic().end_of_interrupt() };
                 return Some(vector);
             } else if vector >= super::IO_APIC_VECTOR_BASE {

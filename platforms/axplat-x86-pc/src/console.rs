@@ -5,6 +5,7 @@ use kspin::SpinNoIrq;
 use uart_16550::SerialPort;
 
 static COM1: SpinNoIrq<SerialPort> = unsafe { SpinNoIrq::new(SerialPort::new(0x3f8)) };
+const COM1_IRQ: usize = 4;
 
 /// Writes a byte to the console.
 pub fn putchar(c: u8) {
@@ -52,6 +53,6 @@ impl ConsoleIf for ConsoleIfImpl {
     /// Returns `None` if input interrupt is not supported.
     #[cfg(feature = "irq")]
     fn irq_num() -> Option<usize> {
-        Some(4)
+        Some(COM1_IRQ)
     }
 }
