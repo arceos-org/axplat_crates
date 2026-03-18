@@ -1,3 +1,4 @@
+use camino::{Utf8Path, Utf8PathBuf};
 use cargo_metadata::{CargoOpt, MetadataCommand, Package};
 use clap::Parser;
 use toml_edit::DocumentMut;
@@ -57,8 +58,14 @@ enum PlatformInfoErr {
     #[error("configuration file not found at `{0}`")]
     NoConfig(String),
 
+    #[error("error reading configuration file `{1}`: {0}")]
+    ConfigIo(#[source] std::io::Error, String),
+
     #[error("invalid configuration file `{0}`")]
     InvalidConfig(String),
+
+    #[error("invalid manifest path `{0}`")]
+    InvalidManifestPath(String),
 }
 
 struct PlatformInfo {
@@ -66,7 +73,7 @@ struct PlatformInfo {
     arch: String,
     version: String,
     source: String,
-    config_path: String,
+    config_path: Utf8PathBuf,
 }
 
 impl PlatformInfo {
@@ -78,9 +85,12 @@ impl PlatformInfo {
             package.id.to_string()
         };
 
-        let manifest_path = package.manifest_path.to_string();
-        let root_dir = manifest_path.strip_suffix("/Cargo.toml").unwrap();
-        let config_path = format!("{root_dir}/axconfig.toml");
+        let manifest_path = Utf8PathBuf::from_path_buf(package.manifest_path.clone().into())
+            .map_err(|p| PlatformInfoErr::InvalidManifestPath(p.to_string_lossy().into_owned()))?;
+        let root_dir = manifest_path
+            .parent()
+            .ok_or_else(|| PlatformInfoErr::InvalidManifestPath(manifest_path.to_string()))?;
+        let config_path = root_dir.join("axconfig.toml");
         let (platform, arch) = parse_config(&config_path)?;
         Ok(Self {
             platform,
@@ -139,16 +149,19 @@ impl PlatformInfo {
     }
 }
 
-fn parse_config(config_path: &str) -> Result<(String, String), PlatformInfoErr> {
-    let toml = std::fs::read_to_string(config_path)
-        .map_err(|_| PlatformInfoErr::NoConfig(config_path.into()))?;
+fn parse_config(config_path: &Utf8Path) -> Result<(String, String), PlatformInfoErr> {
+    let toml =
+        std::fs::read_to_string(config_path.as_std_path()).map_err(|err| match err.kind() {
+            std::io::ErrorKind::NotFound => PlatformInfoErr::NoConfig(config_path.to_string()),
+            _ => PlatformInfoErr::ConfigIo(err, config_path.to_string()),
+        })?;
     (|| {
         let config = toml.parse::<DocumentMut>().ok()?;
         let plat_name = config["platform"].as_str()?.to_string();
         let arch = config["arch"].as_str()?.to_string();
         Some((plat_name, arch))
     })()
-    .ok_or_else(|| PlatformInfoErr::InvalidConfig(config_path.into()))
+    .ok_or_else(|| PlatformInfoErr::InvalidConfig(config_path.to_string()))
 }
 
 pub fn platform_info(args: CommandInfo) {
