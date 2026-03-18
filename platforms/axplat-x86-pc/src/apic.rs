@@ -69,6 +69,13 @@ fn cpu_has_x2apic() -> bool {
     }
 }
 
+fn current_local_apic_id() -> u8 {
+    match raw_cpuid::CpuId::new().get_feature_info() {
+        Some(finfo) => finfo.initial_local_apic_id(),
+        None => 0,
+    }
+}
+
 pub fn init_primary() {
     info!("Initialize Local APIC...");
 
@@ -106,6 +113,7 @@ pub fn init_primary() {
         use x2apic::ioapic::{IrqMode, RedirectionTableEntry};
 
         let max_entry = io_apic.max_table_entry();
+        let local_apic_id = current_local_apic_id();
         info!(
             "  IO-APIC supports {} IRQ inputs (0-{})",
             max_entry + 1,
@@ -115,7 +123,7 @@ pub fn init_primary() {
         for irq in 0..=max_entry {
             let mut entry = RedirectionTableEntry::default();
             entry.set_vector((IO_APIC_VECTOR_BASE as u8) + irq);
-            entry.set_dest(0);
+            entry.set_dest(local_apic_id);
             entry.set_mode(IrqMode::Fixed);
             if irq >= 10 {
                 entry
