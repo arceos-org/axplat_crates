@@ -17,6 +17,9 @@ memory_addr = "0.4"
 axcpu = { workspace = true }
 axplat = { workspace = true }
 
+[target.'cfg(target_os = "macos")'.dependencies]
+percpu = { version = "0.3", features = ["sp-naive"] }
+
 [target.'cfg(target_arch = "x86_64")'.dependencies]
 axplat-x86-pc = { path = "../../platforms/axplat-x86-pc", features = ["irq", "smp"] }
 
