@@ -7,7 +7,7 @@ const TIMER_IRQ: usize = crate::config::devices::TIMER_IRQ;
 
 struct InitIfImpl;
 
-#[impl_plat_interface]
+#[impl_interface]
 impl axplat::init::InitIf for InitIfImpl {
     /// Initializes the platform at the early stage for the primary core.
     ///
