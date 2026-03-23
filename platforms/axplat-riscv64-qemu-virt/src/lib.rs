@@ -7,12 +7,18 @@ extern crate axplat;
 
 mod boot;
 mod console;
+mod dtb;
 mod init;
 #[cfg(feature = "irq")]
 mod irq;
 mod mem;
+#[cfg(feature = "irq")]
+mod plic;
 mod power;
 mod time;
+
+#[cfg(test)]
+mod tests;
 
 pub mod config {
     //! Platform configuration module.
