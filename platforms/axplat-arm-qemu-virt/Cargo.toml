@@ -12,7 +12,7 @@ default = []
 
 [dependencies]
 axconfig-macros = "0.2"
-axcpu = "0.2"
+axcpu = { workspace = true }
 page_table_entry = "0.6"
 axplat = { workspace = true }
 axplat-arm-peripherals = { workspace = true }
