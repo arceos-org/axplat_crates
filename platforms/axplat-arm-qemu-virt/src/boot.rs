@@ -3,9 +3,6 @@ use axcpu::asm::{dsb, isb};
 use axplat::mem::{Aligned4K, pa};
 use page_table_entry::{GenericPTE, MappingFlags, arm::A32PTE};
 
-// Number of 1MB sections for the temporary identity mapping
-const EARLY_BOOT_SECTION_NUM: usize = 4;
-
 /// Boot page table for ARM32 short-descriptor format.
 /// With TTBCR.N=1:
 /// - TTBR0 covers 0x0000_0000 ~ 0x7FFF_FFFF (low 2GB, user space)
@@ -33,6 +30,9 @@ static mut BOOT_STACK: [u8; BOOT_STACK_SIZE] = [0; BOOT_STACK_SIZE];
 #[unsafe(no_mangle)]
 #[unsafe(link_section = ".text.boot")]
 pub unsafe extern "C" fn init_page_tables(pt_ptr: *mut u32) {
+    // Number of 1MB sections for the temporary identity mapping
+    const EARLY_BOOT_SECTION_NUM: usize = 4;
+    
     // 1. Identity Map (Low 2GB - TTBR0 region):
     //    Temporarily map 0x4000_0000..0x403F_FFFF to itself.
     //    This keeps the early boot code and boot stacks accessible while the CPU
