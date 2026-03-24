@@ -32,7 +32,7 @@ static mut BOOT_STACK: [u8; BOOT_STACK_SIZE] = [0; BOOT_STACK_SIZE];
 pub unsafe extern "C" fn init_page_tables(pt_ptr: *mut u32) {
     // Number of 1MB sections for the temporary identity mapping
     const EARLY_BOOT_SECTION_NUM: usize = 4;
-    
+
     // 1. Identity Map (Low 2GB - TTBR0 region):
     //    Temporarily map 0x4000_0000..0x403F_FFFF to itself.
     //    This keeps the early boot code and boot stacks accessible while the CPU
