@@ -40,8 +40,10 @@ jobs:
         platform:
           - name: axplat-x86-pc
             target: x86_64-unknown-none
-          - name: axplat-aarch64-peripherals
+          - name: axplat-arm-peripherals
             target: aarch64-unknown-none
+          - name: axplat-arm-peripherals
+            target: armv7a-none-eabi
           - name: axplat-aarch64-qemu-virt
             target: aarch64-unknown-none
           - name: axplat-aarch64-raspi

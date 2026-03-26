@@ -9,7 +9,7 @@ pub fn init_smp_ok() -> bool {
 }
 
 pub fn init_kernel(cpu_id: usize, arg: usize) {
-    percpu::init();
+    percpu::init_in_place().expect("failed to initialize per-CPU data area");
     percpu::init_percpu_reg(cpu_id);
     init_cpu_id(cpu_id);
 
