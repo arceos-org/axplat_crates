@@ -14,7 +14,8 @@ jobs:
           targets: aarch64-unknown-none
 
       - name: Build docs
-        run: cargo doc --all-features --no-deps --target aarch64-unknown-none -p axplat -p axplat-macros -p axplat-arm-peripherals
+        run: |
+          cargo doc --all-features --no-deps -p axplat -p axplat-macros -p axplat-arm-peripherals --target aarch64-unknown-none
 
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v4
