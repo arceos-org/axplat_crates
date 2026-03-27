@@ -25,13 +25,13 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        arch: [x86_64, aarch64, riscv64, loongarch64]
+        arch: [x86_64, aarch64, riscv64, loongarch64, arm]
     steps:
       - uses: actions/checkout@v6
       - uses: dtolnay/rust-toolchain@nightly
         with:
           components: rust-src, clippy
-          targets: x86_64-unknown-none, riscv64gc-unknown-none-elf, aarch64-unknown-none-softfloat, loongarch64-unknown-none-softfloat
+          targets: x86_64-unknown-none, riscv64gc-unknown-none-elf, aarch64-unknown-none-softfloat, loongarch64-unknown-none-softfloat, armv7a-none-eabi
       - name: Clippy
         run: |
           make -C examples/hello-kernel ARCH=${{ matrix.arch }} clippy
