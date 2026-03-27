@@ -30,6 +30,7 @@ authors = [
     "Su Mingxian <aarkegz@gmail.com>",
     "RobertYuan <634954435@qq.com>",
     "hky1999 <keyang.hu@qq.com>",
+    "Debin <luodeb@outlook.com>",
 ]
 license = "GPL-3.0-or-later OR Apache-2.0 OR MulanPSL-2.0"
 homepage = "https://github.com/arceos-org/arceos"
@@ -39,4 +40,4 @@ repository = "https://github.com/arceos-org/axplat_crates"
 axcpu = "0.3"
 axplat = { version = "0.4.0", path = "./axplat" }
 axplat-macros = { version = "0.2.0", path = "./axplat-macros" }
-axplat-arm-peripherals = { version = "0.3.0", path = "platforms/axplat-arm-peripherals" }
+axplat-arm-peripherals = { version = "0.1.0", path = "platforms/axplat-arm-peripherals" }

@@ -1,6 +1,6 @@
 [package]
 name = "axplat-arm-peripherals"
-version = "0.3.0"
+version = "0.1.0"
 description = "ARM64 common peripheral drivers with `axplat` compatibility"
 documentation = "https://docs.rs/axplat-arm-peripherals"
 keywords = ["arceos", "os", "hal", "peripheral", "arm"]
