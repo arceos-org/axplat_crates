@@ -2,7 +2,7 @@
 
 [![Crates.io](https://img.shields.io/crates/v/axplat-arm-peripherals)](https://crates.io/crates/axplat-arm-peripherals)
 [![Docs.rs](https://docs.rs/axplat-arm-peripherals/badge.svg)](https://docs.rs/axplat-arm-peripherals)
-[![CI](https://github.com/arceos-org/axplat_crates/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/arceos-org/axplat_crates/actions/workflows/ci.yml)
+[![CI](https://github.com/arceos-org/axplat_crates/actions/workflows/check.yml/badge.svg?branch=main)](https://github.com/arceos-org/axplat_crates/actions/workflows/check.yml)
 
 Common peripheral drivers for ARM platforms.
 
