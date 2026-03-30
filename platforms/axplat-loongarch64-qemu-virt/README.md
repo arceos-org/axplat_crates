@@ -1,7 +1,7 @@
 # axplat-loongarch64-qemu-virt
 
 [![Crates.io](https://img.shields.io/crates/v/axplat-loongarch64-qemu-virt)](https://crates.io/crates/axplat-loongarch64-qemu-virt)
-[![CI](https://github.com/arceos-org/axplat_crates/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/arceos-org/axplat_crates/actions/workflows/ci.yml)
+[![CI](https://github.com/arceos-org/axplat_crates/actions/workflows/check.yml/badge.svg?branch=main)](https://github.com/arceos-org/axplat_crates/actions/workflows/check.yml)
 
 Implementation of [axplat](https://github.com/arceos-org/axplat_crates/tree/main/axplat) hardware abstraction layer for QEMU LoongArch virtual machine.
 
