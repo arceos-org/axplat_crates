@@ -274,7 +274,7 @@ dependencies = [
 
 [[package]]
 name = "axplat-loongarch64-qemu-virt"
-version = "0.4.0"
+version = "0.4.1"
 dependencies = [
  "axconfig-macros",
  "axcpu",
