@@ -1,7 +1,7 @@
 # cargo-axplat
 
 [![Crates.io](https://img.shields.io/crates/v/cargo-axplat)](https://crates.io/crates/cargo-axplat)
-[![CI](https://github.com/arceos-org/axplat_crates/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/arceos-org/axplat_crates/actions/workflows/ci.yml)
+[![CI](https://github.com/arceos-org/axplat_crates/actions/workflows/check.yml/badge.svg?branch=main)](https://github.com/arceos-org/axplat_crates/actions/workflows/check.yml)
 
 A cargo subcommand to manage hardware platform packages using [axplat](https://github.com/arceos-org/axplat_crates/tree/main/axplat).
 

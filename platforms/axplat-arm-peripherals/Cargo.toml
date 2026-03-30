@@ -1,7 +1,7 @@
 [package]
 name = "axplat-arm-peripherals"
-version = "0.1.0"
-description = "ARM64 common peripheral drivers with `axplat` compatibility"
+version = "0.1.1"
+description = "ARM32/ARM64 common peripheral drivers with `axplat` compatibility"
 documentation = "https://docs.rs/axplat-arm-peripherals"
 keywords = ["arceos", "os", "hal", "peripheral", "arm"]
 categories = ["embedded", "no-std", "hardware-support", "os"]
@@ -26,4 +26,4 @@ axcpu = { workspace = true }
 axplat = { workspace = true }
 
 [package.metadata.docs.rs]
-targets = ["armv7a-unknown-eabi", "aarch64-unknown-none"]
+targets = ["armv7a-none-eabi", "aarch64-unknown-none"]
