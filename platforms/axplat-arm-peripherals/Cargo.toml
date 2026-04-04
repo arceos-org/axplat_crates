@@ -1,6 +1,6 @@
 [package]
 name = "axplat-arm-peripherals"
-version = "0.1.1"
+version = "0.1.2"
 description = "ARM32/ARM64 common peripheral drivers with `axplat` compatibility"
 documentation = "https://docs.rs/axplat-arm-peripherals"
 keywords = ["arceos", "os", "hal", "peripheral", "arm"]
@@ -15,7 +15,7 @@ repository.workspace = true
 irq = ["axplat/irq"]
 
 [dependencies]
-kspin = "0.1"
+kspin = "0.2"
 log = "0.4"
 int_ratio = "0.1"
 lazyinit = "0.2"

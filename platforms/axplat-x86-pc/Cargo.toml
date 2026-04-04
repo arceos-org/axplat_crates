@@ -19,12 +19,12 @@ smp = ["axplat/smp", "kspin/smp"]
 reboot-on-system-off = []
 
 [dependencies]
-kspin = "0.1"
+kspin = "0.2"
 log = "0.4"
 bitflags = "2.11"
 lazyinit = "0.2"
 int_ratio = "0.1"
-percpu = "0.3"
+percpu = "0.4"
 heapless = "0.9"
 axconfig-macros = "0.2"
 axcpu = { workspace = true }
