@@ -1,6 +1,6 @@
 [package]
 name = "axplat-arm-qemu-virt"
-version = "0.4.0"
+version = "0.4.1"
 description = "Implementation of `axplat` hardware abstraction layer for QEMU ARM virtual machine."
 documentation = "https://docs.rs/axplat-arm-qemu-virt"
 keywords = ["arceos", "os", "hal", "embedded", "armv7"]
