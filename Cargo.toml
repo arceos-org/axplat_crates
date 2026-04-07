@@ -38,6 +38,6 @@ repository = "https://github.com/arceos-org/axplat_crates"
 
 [workspace.dependencies]
 axcpu = "0.3"
-axplat = { version = "0.4.0", path = "./axplat" }
+axplat = { version = "0.4.1", path = "./axplat" }
 axplat-macros = { version = "0.2.0", path = "./axplat-macros" }
-axplat-arm-peripherals = { version = "0.1.0", path = "platforms/axplat-arm-peripherals" }
+axplat-arm-peripherals = { version = "0.1.2", path = "platforms/axplat-arm-peripherals" }

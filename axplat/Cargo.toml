@@ -1,6 +1,6 @@
 [package]
 name = "axplat"
-version = "0.4.0"
+version = "0.4.1"
 description = "This crate provides a unified abstraction layer for diverse hardware platforms."
 documentation = "https://docs.rs/axplat"
 keywords = ["arceos", "os", "hal", "embedded"]
@@ -16,7 +16,7 @@ smp = ["kspin/smp"]
 irq = ["dep:handler_table"]
 
 [dependencies]
-kspin = "0.1"
+kspin = "0.2"
 bitflags = "2.11"
 const-str = "1.1"
 memory_addr = "0.4"
