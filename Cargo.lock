@@ -160,8 +160,9 @@ dependencies = [
 
 [[package]]
 name = "axcpu"
-version = "0.3.0"
-source = "git+https://github.com/arceos-org/axcpu?branch=debin%2Fupdate#24c2b2506c69863e0a0b4f5457199ae25e3f60b3"
+version = "0.3.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "cd607e7fce348338de2e853c46888ebd66d37ec9c3db96cc703573c733e4ea9e"
 dependencies = [
  "aarch32-cpu",
  "aarch64-cpu",
