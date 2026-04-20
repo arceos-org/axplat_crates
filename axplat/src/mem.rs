@@ -76,6 +76,31 @@ impl<T> DerefMut for Aligned4K<T> {
     }
 }
 
+/// A wrapper type for aligning a value to 16K bytes.
+#[repr(align(16384))]
+pub struct Aligned16K<T: Sized>(T);
+
+impl<T: Sized> Aligned16K<T> {
+    /// Creates a new [`Aligned16K`] instance with the given value.
+    pub const fn new(value: T) -> Self {
+        Self(value)
+    }
+}
+
+impl<T> Deref for Aligned16K<T> {
+    type Target = T;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
+impl<T> DerefMut for Aligned16K<T> {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.0
+    }
+}
+
 /// A physical memory region.
 #[derive(Debug, Clone, Copy)]
 pub struct PhysMemRegion {
@@ -253,6 +278,8 @@ where
 
 #[cfg(test)]
 mod tests {
+    use core::mem::align_of;
+
     #[test]
     fn check_sorted_ranges_overlap() {
         use super::check_sorted_ranges_overlap as f;
@@ -311,5 +338,11 @@ mod tests {
 
         // 10..20
         assert_eq!(f(&[(10, 10)], &[(0, 30)]), &[]); // - 0..30 = []
+    }
+
+    #[test]
+    fn aligned_wrappers_have_expected_alignment() {
+        assert_eq!(align_of::<super::Aligned4K<[u8; 1]>>(), 4096);
+        assert_eq!(align_of::<super::Aligned16K<[u8; 1]>>(), 16384);
     }
 }

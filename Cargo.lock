@@ -184,7 +184,7 @@ dependencies = [
 
 [[package]]
 name = "axplat"
-version = "0.4.1"
+version = "0.4.2"
 dependencies = [
  "axplat-macros",
  "bitflags 2.11.0",
@@ -263,7 +263,7 @@ dependencies = [
 
 [[package]]
 name = "axplat-arm-qemu-virt"
-version = "0.4.1"
+version = "0.4.2"
 dependencies = [
  "axconfig-macros",
  "axcpu",

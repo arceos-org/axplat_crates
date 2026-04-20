@@ -25,7 +25,7 @@ OUT_BIN := $(OUT_ELF).bin
 
 qemu_args-x86_64 := \
   -machine q35 \
-  -kernel $(OUT_BIN)
+  -kernel $(OUT_ELF)
 
 qemu_args-riscv64 := \
   -machine virt \

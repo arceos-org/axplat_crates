@@ -1,6 +1,6 @@
 use crate::config::plat::{BOOT_STACK_SIZE, PHYS_VIRT_OFFSET};
 use axcpu::asm::{dsb, isb};
-use axplat::mem::{Aligned4K, pa};
+use axplat::mem::{Aligned16K, pa};
 use page_table_entry::{GenericPTE, MappingFlags, arm::A32PTE};
 
 /// Boot page table for ARM32 short-descriptor format.
@@ -12,7 +12,7 @@ use page_table_entry::{GenericPTE, MappingFlags, arm::A32PTE};
 /// The table has 4096 entries, each covering 1MB (total 4GB address space).
 #[unsafe(no_mangle)]
 #[unsafe(link_section = ".data.boot_page_table")]
-static mut BOOT_PT: Aligned4K<[A32PTE; 4096]> = Aligned4K::new([A32PTE::empty(); 4096]);
+static mut BOOT_PT: Aligned16K<[A32PTE; 4096]> = Aligned16K::new([A32PTE::empty(); 4096]);
 
 #[unsafe(no_mangle)]
 #[unsafe(link_section = ".bss.stack")]
