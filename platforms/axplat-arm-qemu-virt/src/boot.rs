@@ -11,7 +11,7 @@ use page_table_entry::{GenericPTE, MappingFlags, arm::A32PTE};
 /// For simplicity during boot, we use a single unified page table for both.
 /// The table has 4096 entries, each covering 1MB (total 4GB address space).
 #[unsafe(no_mangle)]
-#[unsafe(link_section = ".data.boot_page_table")]
+#[unsafe(link_section = ".data")]
 static mut BOOT_PT: Aligned16K<[A32PTE; 4096]> = Aligned16K::new([A32PTE::empty(); 4096]);
 
 #[unsafe(no_mangle)]
