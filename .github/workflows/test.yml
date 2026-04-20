@@ -9,7 +9,7 @@ jobs:
       - uses: actions/checkout@v6
       - uses: dtolnay/rust-toolchain@nightly
         with:
-          components: rust-src, clippy
+          components: rust-src, clippy, , llvm-tools
       - name: Clippy
         run: cargo clippy -p cargo-axplat
       - name: Build
