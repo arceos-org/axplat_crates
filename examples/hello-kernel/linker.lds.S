@@ -17,9 +17,8 @@ SECTIONS
         _erodata = .;
     }
 
-    .data : ALIGN(16K) {
+    .data : ALIGN(4K) {
         _sdata = .;
-        *(.data.boot_page_table)
         . = ALIGN(4K);
         *(.data .data.*)
         *(.sdata .sdata.*)

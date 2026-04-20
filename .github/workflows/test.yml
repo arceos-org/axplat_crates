@@ -2,6 +2,9 @@ name: Test
 
 on: [push, pull_request]
 
+env:
+  qemu-version: 9.2.4
+
 jobs:
   cli:
     runs-on: ubuntu-latest
@@ -32,6 +35,12 @@ jobs:
         with:
           components: rust-src, clippy
           targets: x86_64-unknown-none, riscv64gc-unknown-none-elf, aarch64-unknown-none-softfloat, loongarch64-unknown-none-softfloat, armv7a-none-eabi
+      - name: Install cargo-binutils
+        run: cargo install cargo-binutils
+      - uses: arceos-org/setup-qemu@v1
+        with:
+          version: ${{ env.qemu-version }}
+          arch_list: x86_64,aarch64,riscv64,loongarch64,arm
       - name: Clippy
         run: |
           make -C examples/hello-kernel ARCH=${{ matrix.arch }} clippy
@@ -42,3 +51,8 @@ jobs:
           make -C examples/hello-kernel ARCH=${{ matrix.arch }}
           make -C examples/irq-kernel ARCH=${{ matrix.arch }}
           make -C examples/smp-kernel ARCH=${{ matrix.arch }} SMP=4
+      - name: Test
+        run: |
+          make -C examples/hello-kernel ARCH=${{ matrix.arch }} run
+          make -C examples/irq-kernel ARCH=${{ matrix.arch }} run
+          make -C examples/smp-kernel ARCH=${{ matrix.arch }} SMP=4 run
